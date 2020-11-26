@@ -1,0 +1,9 @@
+{
+  "name": "contract-automation",
+  "private": true,
+  "main": "index.js",
+  "scripts": {},
+  "dependencies": {
+    "node-fetch": "^2.6.1"
+  }
+}
