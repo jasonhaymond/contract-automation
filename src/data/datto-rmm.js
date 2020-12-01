@@ -1,3 +1,5 @@
+const fetch = require('node-fetch');
+
 // username: public-client
 // password: public
 const BASIC_AUTH_HEADER = 'Basic cHVibGljLWNsaWVudDpwdWJsaWM=';
@@ -9,8 +11,17 @@ const formatFormData = data => Object.entries(data).reduce(
 
 class DattoRMMAPI {
     constructor(baseURL, token) {
-        this.baseURL = baseURL;
-        this.token = token;
+        this.req = async (url, { method = 'GET', headers = {} } = {}) => {
+            const res = await fetch(baseURL + url, {
+                method,
+                headers: { ...headers, Authorization: `Bearer ${token}` },
+            });
+            if (res.ok) return await res.json();
+        };
+    }
+
+    async getAccount() {
+        return await this.req('/v2/account');
     }
 
     static async create(url, key, secretKey) {
@@ -32,10 +43,11 @@ class DattoRMMAPI {
 
         const json = await res.json();
 
-        if (res.status == 200) {
-            return new DattoRMMAPI(baseURL, json.access_token);
+        if (res.ok) {
+            return new DattoRMMAPI(`${baseURL}/api`, json.access_token);
         }
         console.error(json);
     }
 }
 
+module.exports = DattoRMMAPI;
