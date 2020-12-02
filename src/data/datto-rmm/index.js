@@ -29,15 +29,15 @@ module.exports = {
             body,
         });
 
-        const json = await res.json();
+        const resJson = await res.json();
 
         if (!res.ok) {
-            console.error(json);
-            throw new Error('Datto RMM authentication failed');
+            console.error(resJson);
+            throw new Error(`Datto RMM authentication failed: ${resJson}`);
         }
 
         const baseURL = `${rootURL}/api`,
-            token = json.access_token;
+            token = resJson.access_token;
 
         async function req(url, { method = 'GET', headers = {} } = {}) {
             const res = await fetch(baseURL + url, {
