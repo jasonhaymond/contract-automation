@@ -23,3 +23,11 @@ Execute the tool with:
 ```bash
 npm start
 ```
+
+The tool currently generates an HTML report of device counts in Datto RMM. To view the report:
+
+```bash
+node src/index.js > report.html
+```
+
+After executing the above command, open the generated `report.html` in your web browser.

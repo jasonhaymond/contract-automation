@@ -1,16 +1,34 @@
-const buildCell = (row, col) => typeof col.value == 'function' ? col.value(row) : row[col.value];
+const getCellContents = (row, col) => typeof col.value == 'function' ? col.value(row) : row[col.value];
+const buildCell = (contents, rowHeader) => rowHeader ? `<th scope="row">${contents}</th>` : `<td>${contents}</td>`;
+
 
 module.exports = {
-    buildTable(headers, data) {
-        const headerCells = headers.map(col => `<th>${col.name}</th>`).join('');
-        const tableHeader = `<thead><tr>${headerCells}</tr></thead>`;
+    buildTable({ headers, data, caption }) {
+        const headerCells = headers.map(col => `<th scope="col">${col.name}</th>`).join('');
+        const headerHTML = `<thead><tr>${headerCells}</tr></thead>`;
 
         const dataCells = data.map(row => {
-            const currentRowCells = headers.map(col => `<td>${buildCell(row, col)}</td>`).join('');
+            const currentRowCells = headers.map(col => buildCell(getCellContents(row, col), col.header)).join('');
             return `<tr>${currentRowCells}</tr>`;
         }).join('');
 
-        const body = `<tbody>${dataCells}</tbody>`;
-        return `<table>${tableHeader + body}</table>`;
-    }
+        const bodyHTML = `<tbody>${dataCells}</tbody>`;
+        const captionHTML = caption ? `<caption>${caption}</caption>` : '';
+        return `<table>${captionHTML + headerHTML + bodyHTML}</table>`;
+    },
+
+    buildHTML({ title = '', body }) {
+        return `
+            <!DOCTYPE html>
+            <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>${title}</title>
+                </head>
+                <body>
+                    ${body}
+                </body>
+            </html>
+        `;
+    },
 };
