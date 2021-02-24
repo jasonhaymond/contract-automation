@@ -1,4 +1,3 @@
-require('dotenv').config();
 const datto = require('./reports/datto-rmm.js');
 const { buildTable, buildHTML } = require('./html.js');
 
