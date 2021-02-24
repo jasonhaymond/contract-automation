@@ -5,8 +5,7 @@ const { GraphClient } = require('./graph.js');
 (async () => {
     const headers = [
         { name: 'Site Name', value: 'siteName', header: true },
-        { name: 'Desktop Count', value: site => site.deviceCounts.desktops },
-        { name: 'Laptop Count', value: site => site.deviceCounts.laptops },
+        { name: 'Workstation Count', value: site => site.deviceCounts.desktops + site.deviceCounts.laptops },
         { name: 'Server Count', value: site => site.deviceCounts.servers },
     ]
     const drmmReport = await datto.getSiteDeviceCounts();
