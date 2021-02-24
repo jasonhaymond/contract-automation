@@ -1,4 +1,4 @@
-const fetch = require('node-fetch');
+require('isomorphic-fetch');
 const operations = require('./operations');
 
 // username: public-client
