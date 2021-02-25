@@ -4,12 +4,11 @@ contract-automation
 Project setup
 -------------
 
-Make sure [Node.js](https://nodejs.org/en/download/) is installed. Then run:
+Install Docker and Docker Compose. Then run:
 
 ```sh
 git clone git@github.com:jasonhaymond/contract-automation.git
 cd contract-automation
-npm install
 cp .env.example .env
 ```
 
@@ -21,13 +20,11 @@ Using
 Execute the tool with:
 
 ```bash
-npm start
+docker-compose up
 ```
 
-The tool currently generates an HTML report of device counts in Datto RMM. To view the report:
+When you're finished, tear down the Docker container with:
 
 ```bash
-node src/index.js > report.html
+docker-compose down
 ```
-
-After executing the above command, open the generated `report.html` in your web browser.
