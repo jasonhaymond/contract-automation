@@ -24,6 +24,22 @@ module.exports = {
                 <head>
                     <meta charset="utf-8">
                     <title>${title}</title>
+                    <style>
+                        table {
+                            border: 3px solid blue;
+                            border-collapse: collapse;
+                        }
+
+                        th, td {
+                            padding: 8px 20px;
+                            text-align: left;
+                        }
+
+                        caption {
+                            font-weight: bold;
+                            padding: 20px;
+                        }
+                    </style>
                 </head>
                 <body>
                     ${body}
