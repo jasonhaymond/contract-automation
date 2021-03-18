@@ -3,6 +3,7 @@
   "private": true,
   "dependencies": {
     "@microsoft/microsoft-graph-client": "^2.2.1",
+    "better-sqlite3": "^7.1.2",
     "debug": "^3.2.7",
     "isomorphic-fetch": "^3.0.0"
   },
