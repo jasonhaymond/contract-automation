@@ -1,6 +1,6 @@
 const datto = require('./datto-rmm.js');
-const { buildTable, buildHTML } = require('./html.js');
-const { GraphClient } = require('./microsoft-graph.js');
+const { buildTable, buildHTML } = require('./lib/html');
+const { Graph } = require('./models/graph');
 
 (async () => {
     const headers = [
@@ -13,6 +13,5 @@ const { GraphClient } = require('./microsoft-graph.js');
     const body = buildTable({ headers, data: drmmReport, caption: title });
     const html = buildHTML({ body, title });
 
-    const client = new GraphClient();
-    client.sendEmail('Datto RMM Report', process.env.EMAIL_RECIPIENT, html);
+    Graph.sendEmail('Datto RMM Report', process.env.EMAIL_RECIPIENT, html);
 })();

@@ -1,4 +1,4 @@
-FROM node:14-alpine
+FROM node:14
 
 # Set up Node environemt, defaulting to production
 ARG NODE_ENV=production
