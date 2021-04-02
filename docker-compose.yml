@@ -4,3 +4,9 @@ services:
       context: .
     env_file:
       - ./.env
+    volumes:
+      - db:/var/local/contract-automation
+
+
+volumes:
+  db:
