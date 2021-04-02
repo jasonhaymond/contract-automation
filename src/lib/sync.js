@@ -2,9 +2,9 @@
  *
  * unidirectionalArraySync is a simplified version of Scott Mebberson's
  * array-sync module, which is available on GitHub under the MIT license.
- * 
+ *
  * https://github.com/smebberson/array-sync
- * 
+ *
  * The MIT License (MIT)
  *
  * Copyright (c) 2016 Scott Mebberson
@@ -28,8 +28,7 @@
  * IN THE SOFTWARE.
  */
 
-const unidirectionalArraySync = (source, updated, key) => {
-};
+const unidirectionalArraySync = (source, updated, key) => {};
 
 module.exports = {
     unidirectionalArraySync,

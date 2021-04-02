@@ -1,6 +1,6 @@
 module.exports = {
     async getAccount() {
-        return await this.req('/v2/account');
+        return await this.req("/v2/account");
     },
 
     async getSites(max = 250) {
@@ -9,5 +9,5 @@ module.exports = {
 
     async getDevices(max = 250) {
         return await this.req(`/v2/account/devices?max=${max}`);
-    }
-}
+    },
+};

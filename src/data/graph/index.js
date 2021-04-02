@@ -1,4 +1,4 @@
-const { Client, newClient } = require('./client');
+const { Client, newClient } = require("./client");
 
 module.exports = {
     Client: newClient(),

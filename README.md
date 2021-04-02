@@ -1,8 +1,6 @@
-contract-automation
-===================
+# contract-automation
 
-Project setup
--------------
+## Project setup
 
 Install Docker and Docker Compose. Then run:
 
@@ -14,8 +12,7 @@ cp .env.example .env
 
 Add your API keys and other environment variables to `.env`.
 
-Using
------
+## Using
 
 Execute the tool with:
 

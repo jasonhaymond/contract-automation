@@ -1,13 +1,14 @@
 {
-  "name": "contract-automation",
-  "private": true,
-  "dependencies": {
-    "@microsoft/microsoft-graph-client": "^2.2.1",
-    "better-sqlite3": "^7.1.2",
-    "debug": "^3.2.7",
-    "isomorphic-fetch": "^3.0.0"
-  },
-  "devDependencies": {
-    "nodemon": "^2.0.7"
-  }
+    "name": "contract-automation",
+    "private": true,
+    "dependencies": {
+        "@microsoft/microsoft-graph-client": "^2.2.1",
+        "better-sqlite3": "^7.1.2",
+        "debug": "^3.2.7",
+        "isomorphic-fetch": "^3.0.0"
+    },
+    "devDependencies": {
+        "nodemon": "^2.0.7",
+        "prettier": "2.2.1"
+    }
 }

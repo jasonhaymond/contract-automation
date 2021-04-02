@@ -1,4 +1,4 @@
-require('isomorphic-fetch');
+require("isomorphic-fetch");
 
 class MyAuthenticationProvider {
     #tenantID;
@@ -12,12 +12,14 @@ class MyAuthenticationProvider {
     }
 
     async getAccessToken() {
-        const oauthURI = `https://login.microsoftonline.com/${this.#tenantID}/oauth2/v2.0/token`;
+        const oauthURI = `https://login.microsoftonline.com/${
+            this.#tenantID
+        }/oauth2/v2.0/token`;
         const result = await fetch(oauthURI, {
-            method: 'POST',
+            method: "POST",
             body: new URLSearchParams({
-                grant_type: 'client_credentials',
-                scope: 'https://graph.microsoft.com/.default',
+                grant_type: "client_credentials",
+                scope: "https://graph.microsoft.com/.default",
                 client_id: this.#clientID,
                 client_secret: this.#secret,
             }),

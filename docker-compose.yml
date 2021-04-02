@@ -7,6 +7,5 @@ services:
     volumes:
       - db:/var/local/contract-automation
 
-
 volumes:
   db:
