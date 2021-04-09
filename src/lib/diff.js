@@ -64,9 +64,9 @@ const unidirectionalArrayDiff = (source, updated, key) => {
     const missingValues = findMissingValues(source, updated, comparator);
 
     return {
-        newValues: mapToKey(newValues, key),
+        newValues,
         changedValues,
-        missingValues: mapToKey(missingValues, key),
+        missingValues,
     };
 };
 

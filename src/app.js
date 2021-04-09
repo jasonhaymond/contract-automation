@@ -1,3 +1,4 @@
 const { sendReport } = require("./report");
+const { syncDattoRmm } = require("./sync/datto-rmm");
 
-sendReport();
+syncDattoRmm();

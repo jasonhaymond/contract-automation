@@ -2,7 +2,7 @@ FROM node:14
 
 ARG NODE_ENV=production
 ARG DB_DIR=/var/local/contract-automation
-ARG APP_DIR=/opt/approot
+ARG APP_DIR=/opt/app
 
 ENV NODE_ENV=$NODE_ENV
 ENV DB_PATH=$DB_DIR/app.db
@@ -10,6 +10,7 @@ ENV DB_PATH=$DB_DIR/app.db
 # Allow Node debugging
 EXPOSE 9229
 
+# Update npm to the latest version
 RUN npm i npm@latest -g
 
 # Create the folder that will store the DB
@@ -23,12 +24,10 @@ WORKDIR $APP_DIR
 USER node
 
 # Install NPM dependencies
-COPY --chown=node:node package.json package-lock.json ./
-RUN npm install --no-optional && npm cache clean --force
+COPY --chown=node:node package*.json ./
+RUN npm install
 
-# Copy in source files in a subdirectory
-# to avoid issues with bind-mounting node_modules
-WORKDIR $APP_DIR/app
+# Copy in source files
 COPY --chown=node:node . .
 
 # Start the app
