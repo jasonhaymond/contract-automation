@@ -32,8 +32,13 @@ const keyComparator = (key) => (value1, value2) => value1[key] === value2[key];
 
 const mapToKey = (arr, key) => arr.map((val) => val[key]);
 
-const deepEquals = (obj1, obj2) =>
-    Object.keys(obj1).every((key) => obj1[key] === obj2[key]);
+const defaultNeedsUpdate = (obj1, obj2, ignoreKeys) =>
+    Object.keys(obj1).some(
+        (key) =>
+            obj2.hasOwnProperty(key) &&
+            obj1[key] !== obj2[key] &&
+            !ignoreKeys.includes(key)
+    );
 
 const difference = (a, b, comparator) =>
     a.filter(
@@ -43,30 +48,40 @@ const difference = (a, b, comparator) =>
 const findNewValues = (source, updated, comparator) =>
     difference(updated, source, comparator);
 
-const findChangedValues = (source, updated, comparator) =>
+const findChangedValues = (
+    source,
+    updated,
+    comparator,
+    { needsUpdate = defaultNeedsUpdate, ignoreKeys = [] } = {}
+) =>
     updated.filter(
         (updatedValue) =>
             source.find(
                 (sourceValue) =>
                     comparator(sourceValue, updatedValue) &&
-                    !deepEquals(sourceValue, updatedValue)
+                    needsUpdate(sourceValue, updatedValue, ignoreKeys)
             ) !== undefined
     );
 
-const findMissingValues = (source, updated, comparator) =>
+const findRemovedValues = (source, updated, comparator) =>
     difference(source, updated, comparator);
 
-const unidirectionalArrayDiff = (source, updated, key) => {
+const unidirectionalArrayDiff = (source, updated, key, updateOptions) => {
     const comparator = keyComparator(key);
 
     const newValues = findNewValues(source, updated, comparator);
-    const changedValues = findChangedValues(source, updated, comparator);
-    const missingValues = findMissingValues(source, updated, comparator);
+    const changedValues = findChangedValues(
+        source,
+        updated,
+        comparator,
+        updateOptions
+    );
+    const removedValues = findRemovedValues(source, updated, comparator);
 
     return {
         newValues,
         changedValues,
-        missingValues,
+        removedKeys: mapToKey(removedValues, key),
     };
 };
 
