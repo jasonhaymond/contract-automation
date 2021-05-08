@@ -95,7 +95,7 @@ const Database = {
     },
 
     createDattoRmmDevice(db, device) {
-        const sql = `
+        const insertSql = `
             INSERT INTO drmm_device (
                 drmm_device_uid,
                 drmm_site_id,
@@ -108,8 +108,19 @@ const Database = {
             VALUES (?, ?, ?, ?, ?, ?, ?);
         `;
 
+        const logSql = `
+            INSERT INTO drmm_device_log (
+                drmm_device_log_timestamp,
+                drmm_device_log_operation,
+                drmm_site_id,
+                drmm_device_uid,
+                drmm_device_type,
+                drmm_device_hostname
+            )
+            VALUES (?, ?, ?, ?, ?, ?);
+        `;
+
         const {
-            uid,
             siteUid,
             type,
             hostname,
@@ -121,10 +132,21 @@ const Database = {
         const siteId = getSiteIdFromUid(siteUid);
         if (!siteId) return;
 
+        const uid = uuid.parse(device.uid);
+
+        db.prepare(logSql).run(
+            Date.now(),
+            "create",
+            siteId,
+            uid,
+            type,
+            hostname
+        );
+
         return db
-            .prepare(sql)
+            .prepare(insertSql)
             .run(
-                uuid.parse(uid),
+                uid,
                 siteId,
                 type,
                 hostname,
@@ -174,12 +196,37 @@ const Database = {
     },
 
     deleteDattoRmmDevice(db, device) {
-        const sql = `
+        const deleteSql = `
             DELETE FROM drmm_device
             WHERE drmm_device_uid = ?;
         `;
 
-        return db.prepare(sql).run(uuid.parse(device.uid));
+        const logSql = `
+            INSERT INTO drmm_device_log (
+                drmm_device_log_timestamp,
+                drmm_device_log_operation,
+                drmm_site_id,
+                drmm_device_uid,
+                drmm_device_type,
+                drmm_device_hostname
+            )
+            VALUES (?, ?, ?, ?, ?, ?);
+        `;
+
+        const { siteUid, type, hostname } = device;
+
+        const siteId = getSiteIdFromUid(siteUid);
+        const uid = uuid.parse(device.uid);
+
+        db.prepare(logSql).run(
+            Date.now(),
+            "delete",
+            siteId,
+            uid,
+            type,
+            hostname
+        );
+        return db.prepare(deleteSql).run(uid);
     },
 };
 
