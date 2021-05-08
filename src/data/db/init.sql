@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS drmm_device (
     drmm_device_id              INTEGER PRIMARY KEY,
     drmm_device_uid             BINARY(16) NOT NULL UNIQUE,
     drmm_site_id                INTEGER NOT NULL,
-    drmm_device_type            TINYINT NOT NULL,
+    drmm_device_type            VARCHAR(16) NOT NULL,
     drmm_device_hostname        NVARCHAR(255) NOT NULL,
     drmm_device_description     NVARCHAR(4095),
     drmm_device_ipv4_int        BINARY(4),
@@ -26,10 +26,10 @@ CREATE TABLE IF NOT EXISTS drmm_device (
 CREATE TABLE IF NOT EXISTS drmm_device_log (
     drmm_device_log_id          INTEGER PRIMARY KEY,
     drmm_device_log_timestamp   INTEGER NOT NULL,
-    drmm_device_log_operation   TINYINT NOT NULL,
+    drmm_device_log_operation   VARCHAR(8) NOT NULL,
     drmm_site_id                INTEGER NOT NULL,
     drmm_device_uid             BINARY(16) NOT NULL,
-    drmm_device_type            TINYINT NOT NULL,
+    drmm_device_type            VARCHAR(16) NOT NULL,
     drmm_device_hostname        NVARCHAR(255) NOT NULL,
     FOREIGN KEY (drmm_site_id)  REFERENCES drmm_site (drmm_site_id) ON DELETE CASCADE
 );

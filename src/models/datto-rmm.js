@@ -1,13 +1,11 @@
 const transformDevice = ({
     uid,
-    deviceClass,
     deviceType,
     hostname,
     description,
     intIpAddress,
     extIpAddress,
     siteUid,
-    ...rest
 }) => {
     const type = deviceType ? deviceType.category.toLowerCase() : "unknown";
 

@@ -1,42 +1,27 @@
-const transformSiteFromDb = (site) => {
-    const { drmm_site_id, drmm_site_uid, drmm_site_name } = site;
-    return {
-        id: drmm_site_id,
-        uid: drmm_site_uid,
-        name: drmm_site_name,
-    };
-};
+const uuid = require("uuid");
 
-const transformDeviceFromDb = (device) => {
-    const {
-        drmm_device_id,
-        drmm_device_uid,
-        drmm_site_id,
-        drmm_site_uid,
-        drmm_device_type,
-        drmm_device_hostname,
-        drmm_device_description,
-        drmm_device_ipv4_int,
-        drmm_device_ipv4_ext,
-    } = device;
+const transformSiteFromDb = (site) => ({
+    id: site.drmm_site_id,
+    uid: uuid.stringify(site.drmm_site_uid),
+    name: site.drmm_site_name,
+});
 
-    return {
-        id: drmm_device_id,
-        uid: drmm_device_uid,
-        siteId: drmm_site_id,
-        siteUid: drmm_site_uid,
-        type: drmm_device_type,
-        hostname: drmm_device_hostname,
-        description: drmm_device_description,
-        intIpAddress: drmm_device_ipv4_int,
-        extIpAddress: drmm_device_ipv4_ext,
-    };
-};
+const transformDeviceFromDb = (device) => ({
+    id: device.drmm_device_id,
+    uid: uuid.stringify(device.drmm_device_uid),
+    siteId: device.drmm_site_id,
+    siteUid: uuid.stringify(device.drmm_site_uid),
+    type: device.drmm_device_type,
+    hostname: device.drmm_device_hostname,
+    description: device.drmm_device_description,
+    intIpAddress: device.drmm_device_ipv4_int,
+    extIpAddress: device.drmm_device_ipv4_ext,
+});
 
 const getSiteIdFromUid = (db, uid) => {
     const site = db
         .prepare("SELECT drmm_site_id FROM drmm_site WHERE drmm_site_uid = ?;")
-        .get(uid);
+        .get(uuid.parse(uid));
 
     return site ? site.drmm_site_id : null;
 };
@@ -64,7 +49,7 @@ const Database = {
         `;
 
         const { uid, name } = site;
-        return db.prepare(sql).run(uid, name);
+        return db.prepare(sql).run(uuid.parse(uid), name);
     },
 
     updateDattoRmmSite(db, site) {
@@ -75,16 +60,16 @@ const Database = {
         `;
 
         const { uid, name } = site;
-        return db.prepare(sql).run(name, uid);
+        return db.prepare(sql).run(name, uuid.parse(uid));
     },
 
-    deleteDattoRmmSiteByUid(db, uid) {
+    deleteDattoRmmSite(db, site) {
         const sql = `
             DELETE FROM drmm_site
             WHERE drmm_site_uid = ?;
         `;
 
-        return db.prepare(sql).run(uid);
+        return db.prepare(sql).run(uuid.parse(site.uid));
     },
 
     getDattoRmmDevices(db) {
@@ -139,7 +124,7 @@ const Database = {
         return db
             .prepare(sql)
             .run(
-                uid,
+                uuid.parse(uid),
                 siteId,
                 type,
                 hostname,
@@ -183,17 +168,18 @@ const Database = {
                 hostname,
                 description,
                 intIpAddress,
-                extIpAddress
+                extIpAddress,
+                uuid.parse(uid)
             );
     },
 
-    deleteDattoRmmDeviceByUid(db, uid) {
+    deleteDattoRmmDevice(db, device) {
         const sql = `
             DELETE FROM drmm_device
             WHERE drmm_device_uid = ?;
         `;
 
-        return db.prepare(sql).run(uid);
+        return db.prepare(sql).run(uuid.parse(device.uid));
     },
 };
 

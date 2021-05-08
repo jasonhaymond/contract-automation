@@ -30,8 +30,6 @@
 
 const keyComparator = (key) => (value1, value2) => value1[key] === value2[key];
 
-const mapToKey = (arr, key) => arr.map((val) => val[key]);
-
 const defaultNeedsUpdate = (obj1, obj2, ignoreKeys) =>
     Object.keys(obj1).some(
         (key) =>
@@ -81,7 +79,7 @@ const unidirectionalArrayDiff = (source, updated, key, updateOptions) => {
     return {
         newValues,
         changedValues,
-        removedKeys: mapToKey(removedValues, key),
+        removedValues,
     };
 };
 

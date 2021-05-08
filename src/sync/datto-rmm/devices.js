@@ -6,7 +6,7 @@ const syncDevices = async (db, datto) => {
     const sourceDevices = Database.getDattoRmmDevices(db);
     const updatedDevices = await dattoRmm.getDevices(datto);
 
-    const { newValues, changedValues, removedKeys } = unidirectionalArrayDiff(
+    const { newValues, changedValues, removedValues } = unidirectionalArrayDiff(
         sourceDevices,
         updatedDevices,
         "uid"
@@ -20,8 +20,8 @@ const syncDevices = async (db, datto) => {
         Database.updateDattoRmmDevice(db, device);
     });
 
-    removedKeys.forEach((deviceUid) => {
-        Database.deleteDattoRmmDeviceByUid(db, deviceUid);
+    removedValues.forEach((device) => {
+        Database.deleteDattoRmmDevice(db, device);
     });
 };
 

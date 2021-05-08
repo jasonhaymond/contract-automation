@@ -6,7 +6,7 @@ const syncSites = async (db, datto) => {
     const sourceSites = Database.getDattoRmmSites(db);
     const updatedSites = await dattoRmm.getSites(datto);
 
-    const { newValues, changedValues, removedKeys } = unidirectionalArrayDiff(
+    const { newValues, changedValues, removedValues } = unidirectionalArrayDiff(
         sourceSites,
         updatedSites,
         "uid"
@@ -20,8 +20,8 @@ const syncSites = async (db, datto) => {
         Database.updateDattoRmmSite(db, site);
     });
 
-    removedKeys.forEach((siteUid) => {
-        Database.deleteDattoRmmSiteByUid(db, siteUid);
+    removedValues.forEach((site) => {
+        Database.deleteDattoRmmSite(db, site);
     });
 };
 

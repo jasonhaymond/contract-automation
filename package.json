@@ -9,7 +9,8 @@
         "better-sqlite3-with-prebuilds": "^7.1.7",
         "debug": "^4.3.1",
         "dotenv": "^8.2.0",
-        "isomorphic-fetch": "^3.0.0"
+        "isomorphic-fetch": "^3.0.0",
+        "uuid": "^8.3.2"
     },
     "devDependencies": {
         "nodemon": "^2.0.7",
