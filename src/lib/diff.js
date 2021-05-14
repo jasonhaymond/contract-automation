@@ -52,14 +52,16 @@ const findChangedValues = (
     comparator,
     { needsUpdate = defaultNeedsUpdate, ignoreKeys = [] } = {}
 ) =>
-    updated.filter(
-        (updatedValue) =>
-            source.find(
+    updated.map(
+        (updatedValue) => ({
+            ...updatedValue,
+            $source: source.find(
                 (sourceValue) =>
                     comparator(sourceValue, updatedValue) &&
                     needsUpdate(sourceValue, updatedValue, ignoreKeys)
-            ) !== undefined
-    );
+            )
+        })
+    ).filter(obj => obj.$source !== undefined);
 
 const findRemovedValues = (source, updated, comparator) =>
     difference(source, updated, comparator);

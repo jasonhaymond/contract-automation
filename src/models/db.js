@@ -169,6 +169,18 @@ const Database = {
 
         `;
 
+        const logSql = `
+            INSERT INTO drmm_device_log (
+                drmm_device_log_timestamp,
+                drmm_device_log_operation,
+                drmm_site_id,
+                drmm_device_uid,
+                drmm_device_type,
+                drmm_device_hostname
+            )
+            VALUES (?, ?, ?, ?, ?, ?);
+        `;
+
         const {
             uid,
             siteUid,
@@ -177,10 +189,23 @@ const Database = {
             description,
             intIpAddress,
             extIpAddress,
+            $source,
         } = device;
 
         const siteId = getSiteIdFromUid(siteUid);
-        if (!siteId) return;
+        if (!siteId) {
+            this.deleteDattoRmmDevice(db, device);
+            return;
+        }
+
+        if (siteUid !== $source.siteUid) {
+            const timestamp = Date.now();
+            const prevSiteId = getSiteIdFromUid($source.siteUid);
+
+            const stmt = db.prepare(logSql);
+            stmt.run(timestamp, "create", siteId, uid, type, hostname);
+            stmt.run(timestamp, "delete", prevSiteId, uid, type, hostname);
+        }
 
         return db
             .prepare(sql)
@@ -226,6 +251,7 @@ const Database = {
             type,
             hostname
         );
+
         return db.prepare(deleteSql).run(uid);
     },
 };
