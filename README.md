@@ -14,10 +14,10 @@ Add your API keys and other environment variables to `.env`.
 
 ## Using
 
-Execute the tool with:
+To start the app in production mode, run this command:
 
 ```bash
-docker-compose up
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up
 ```
 
 When you're finished, tear down the Docker container with:
