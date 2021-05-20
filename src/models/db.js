@@ -1,16 +1,14 @@
-const uuid = require("uuid");
-
 const transformSiteFromDb = (site) => ({
     id: site.drmm_site_id,
-    uid: uuid.stringify(site.drmm_site_uid),
+    uid: site.drmm_site_uid,
     name: site.drmm_site_name,
 });
 
 const transformDeviceFromDb = (device) => ({
     id: device.drmm_device_id,
-    uid: uuid.stringify(device.drmm_device_uid),
+    uid: device.drmm_device_uid,
     siteId: device.drmm_site_id,
-    siteUid: uuid.stringify(device.drmm_site_uid),
+    siteUid: device.drmm_site_uid,
     type: device.drmm_device_type,
     hostname: device.drmm_device_hostname,
     description: device.drmm_device_description,
@@ -21,7 +19,7 @@ const transformDeviceFromDb = (device) => ({
 const getSiteIdFromUid = (db, uid) => {
     const site = db
         .prepare("SELECT drmm_site_id FROM drmm_site WHERE drmm_site_uid = ?;")
-        .get(uuid.parse(uid));
+        .get(uid);
 
     return site ? site.drmm_site_id : null;
 };
@@ -49,7 +47,7 @@ const Database = {
         `;
 
         const { uid, name } = site;
-        return db.prepare(sql).run(uuid.parse(uid), name);
+        return db.prepare(sql).run(uid, name);
     },
 
     updateDattoRmmSite(db, site) {
@@ -60,7 +58,7 @@ const Database = {
         `;
 
         const { uid, name } = site;
-        return db.prepare(sql).run(name, uuid.parse(uid));
+        return db.prepare(sql).run(name, uid);
     },
 
     deleteDattoRmmSite(db, site) {
@@ -69,7 +67,7 @@ const Database = {
             WHERE drmm_site_uid = ?;
         `;
 
-        return db.prepare(sql).run(uuid.parse(site.uid));
+        return db.prepare(sql).run(site.uid);
     },
 
     getDattoRmmDevices(db) {
@@ -132,7 +130,7 @@ const Database = {
         const siteId = getSiteIdFromUid(db, siteUid);
         if (!siteId) return;
 
-        const uid = uuid.parse(device.uid);
+        const uid = device.uid;
 
         db.prepare(logSql).run(
             Date.now(),
@@ -216,7 +214,7 @@ const Database = {
                 description,
                 intIpAddress,
                 extIpAddress,
-                uuid.parse(uid)
+                uid
             );
     },
 
@@ -241,7 +239,7 @@ const Database = {
         const { siteUid, type, hostname } = device;
 
         const siteId = getSiteIdFromUid(siteUid);
-        const uid = uuid.parse(device.uid);
+        const uid = device.uid;
 
         db.prepare(logSql).run(
             Date.now(),
