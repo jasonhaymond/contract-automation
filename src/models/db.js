@@ -129,7 +129,7 @@ const Database = {
             extIpAddress,
         } = device;
 
-        const siteId = getSiteIdFromUid(siteUid);
+        const siteId = getSiteIdFromUid(db, siteUid);
         if (!siteId) return;
 
         const uid = uuid.parse(device.uid);
@@ -192,7 +192,7 @@ const Database = {
             $source,
         } = device;
 
-        const siteId = getSiteIdFromUid(siteUid);
+        const siteId = getSiteIdFromUid(db, siteUid);
         if (!siteId) {
             this.deleteDattoRmmDevice(db, device);
             return;
@@ -200,7 +200,7 @@ const Database = {
 
         if (siteUid !== $source.siteUid) {
             const timestamp = Date.now();
-            const prevSiteId = getSiteIdFromUid($source.siteUid);
+            const prevSiteId = getSiteIdFromUid(db, $source.siteUid);
 
             const stmt = db.prepare(logSql);
             stmt.run(timestamp, "create", siteId, uid, type, hostname);
