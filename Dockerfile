@@ -31,4 +31,5 @@ RUN npm install
 COPY --chown=node:node . .
 
 # Start the app
-CMD [ "node", "src/app.js" ]
+ENTRYPOINT [ "node", "src/app.js" ]
+CMD ["--sync"]
