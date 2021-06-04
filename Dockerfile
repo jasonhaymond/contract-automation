@@ -31,5 +31,5 @@ RUN npm install
 COPY --chown=node:node . .
 
 # Start the app
-ENTRYPOINT [ "node", "src/app.js" ]
-CMD ["--sync"]
+ENTRYPOINT ["./entrypoint.sh"]
+CMD ["sync"]
