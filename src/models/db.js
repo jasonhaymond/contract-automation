@@ -252,6 +252,39 @@ const Database = {
 
         return db.prepare(deleteSql).run(uid);
     },
+
+    runReport(db) {
+        const lastReportSql = `
+            SELECT report_timestamp
+            FROM report
+            ORDER BY report_timestamp DESC
+            LIMIT 1;
+        `;
+
+        const recentLogEntriesSql = `
+            SELECT
+                drmm_device_log_id,
+                drmm_device_log_timestamp,
+                drmm_device_log_operation,
+                drmm_site_id,
+                drmm_device_uid,
+                drmm_device_type,
+                drmm_device_hostname
+            FROM drmm_device_log
+            WHERE drmm_device_log_timestamp > ?
+            ORDER BY drmm_device_log_timestamp DESC;
+        `;
+
+        const logStmt = db.prepare(recentLogEntriesSql);
+        const reportStmt = db.prepare(createReportSql);
+
+        const lastReportTimestamp =
+            db.prepare(lastReportSql).pluck().get() || 0;
+
+        db.transaction(() => {
+            const recentLogEntries = logStmt.all(lastReportTimestamp);
+        })();
+    },
 };
 
 module.exports = {

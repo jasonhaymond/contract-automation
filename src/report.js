@@ -1,6 +1,7 @@
 const datto = require("./models/datto-rmm");
 const { buildTable, buildHTML } = require("./lib/html");
 const { Graph } = require("./models/graph");
+const { Database } = require("./modles/db");
 
 const sendReport = async () => {
     const headers = [
