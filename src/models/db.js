@@ -16,6 +16,17 @@ const transformDeviceFromDb = (device) => ({
     extIpAddress: device.drmm_device_ipv4_ext,
 });
 
+const transformLogEntryFromDb = (entry) => ({
+    id: entry.drmm_device_log_id,
+    timestamp: new Date(entry.drmm_device_log_timestamp),
+    operation: entry.drmm_device_log_operation,
+    siteId: entry.drmm_site_id,
+    siteName: entry.drmm_site_name,
+    uid: entry.drmm_device_uid,
+    type: entry.drmm_device_type,
+    hostname: entry.drmm_device_hostname,
+});
+
 const getSiteIdFromUid = (db, uid) => {
     const site = db
         .prepare("SELECT drmm_site_id FROM drmm_site WHERE drmm_site_uid = ?;")
@@ -34,10 +45,7 @@ const Database = {
             FROM drmm_site;
         `;
 
-        return db
-            .prepare(sql)
-            .all()
-            .map((site) => transformSiteFromDb(site));
+        return db.prepare(sql).all().map(transformSiteFromDb);
     },
 
     createDattoRmmSite(db, site) {
@@ -86,10 +94,7 @@ const Database = {
             NATURAL JOIN drmm_site;
         `;
 
-        return db
-            .prepare(sql)
-            .all()
-            .map((device) => transformDeviceFromDb(device));
+        return db.prepare(sql).all().map(transformDeviceFromDb);
     },
 
     createDattoRmmDevice(db, device) {
@@ -266,15 +271,20 @@ const Database = {
                 drmm_device_log_id,
                 drmm_device_log_timestamp,
                 drmm_device_log_operation,
-                drmm_site_id,
+                drmm_device_log.drmm_site_id,
+                drmm_site_name,
                 drmm_device_uid,
                 drmm_device_type,
                 drmm_device_hostname
             FROM drmm_device_log
+            INNER JOIN drmm_site
+               ON drmm_site.drmm_site_id = drmm_device_log.drmm_site_id
             WHERE
                 drmm_device_log_timestamp > ?
                 AND drmm_device_log_timestamp <= ?
-            ORDER BY drmm_device_log_timestamp DESC;
+            ORDER BY
+                drmm_site_name,
+                drmm_device_log_timestamp DESC;
         `;
 
         const createReportSql = `
@@ -287,17 +297,12 @@ const Database = {
         const lastReportTimestamp =
             db.prepare(lastReportSql).pluck().get() || 0;
 
-        const logStmt = db.prepare(recentLogEntriesSql);
-        const createReportStmt = db.prepare(createReportSql);
         const now = Date.now();
-        let recentLogEntries;
-
-        db.transaction(() => {
-            recentLogEntries = logStmt.all(lastReportTimestamp, now);
-            createReportStmt.run(now);
-        })();
-
-        return recentLogEntries;
+        db.prepare(createReportSql).run(now);
+        return db
+            .prepare(recentLogEntriesSql)
+            .all(lastReportTimestamp, now)
+            .map(transformLogEntryFromDb);
     },
 };
 

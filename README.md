@@ -2,8 +2,8 @@
 
 ## Project setup
 
-Install Docker and Docker Compose (the following instructions should work
-for Debian and Ubuntu):
+Install Docker and Docker Compose (the following instructions
+should work for Debian and Ubuntu):
 
 ```sh
 sudo apt install docker.io
@@ -25,16 +25,21 @@ cp .env.example .env
 Add your API keys and other environment variables to `.env`
 using your favorite text editor.
 
-## Using
+## Usage
 
-To start the app in production mode, run this command:
+To run the app in production mode, use this command:
 
-```bash
-./start-prod.sh
+```sh
+docker-compose -f docker-compose.yml run --service-ports --rm node [COMMAND]
 ```
 
-When you're finished, tear down the Docker container with:
+To debug:
 
-```bash
-docker-compose down
+```sh
+docker-compose run --service-ports --rm node [COMMAND]
 ```
+
+`[COMMAND]` can be one of the following:
+
+-   `sync` will synchronize the latest data from vendors (default)
+-   `report` sends an email report using current database data
