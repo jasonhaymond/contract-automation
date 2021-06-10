@@ -271,19 +271,33 @@ const Database = {
                 drmm_device_type,
                 drmm_device_hostname
             FROM drmm_device_log
-            WHERE drmm_device_log_timestamp > ?
+            WHERE
+                drmm_device_log_timestamp > ?
+                AND drmm_device_log_timestamp <= ?
             ORDER BY drmm_device_log_timestamp DESC;
         `;
 
-        const logStmt = db.prepare(recentLogEntriesSql);
-        const reportStmt = db.prepare(createReportSql);
+        const createReportSql = `
+            INSERT INTO report (
+                report_timestamp
+            )
+            VALUES (?);
+        `;
 
         const lastReportTimestamp =
             db.prepare(lastReportSql).pluck().get() || 0;
 
+        const logStmt = db.prepare(recentLogEntriesSql);
+        const createReportStmt = db.prepare(createReportSql);
+        const now = Date.now();
+        let recentLogEntries;
+
         db.transaction(() => {
-            const recentLogEntries = logStmt.all(lastReportTimestamp);
+            recentLogEntries = logStmt.all(lastReportTimestamp, now);
+            createReportStmt.run(now);
         })();
+
+        return recentLogEntries;
     },
 };
 
