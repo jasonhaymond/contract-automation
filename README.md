@@ -2,7 +2,7 @@
 
 ## Project setup
 
-Install Docker and Docker Compose (the following instructions
+Install Docker and Docker Compose (the following commands
 should work for Debian and Ubuntu):
 
 ```sh
@@ -43,3 +43,17 @@ docker-compose run --service-ports --rm node [COMMAND]
 
 -   `sync` will synchronize the latest data from vendors (default)
 -   `report` sends an email report using current database data
+
+`sync` should be run every few hours. `report` can be run at any desired interval;
+it will list all changes since the last report. A monthly report is typical.
+
+## Scheduling with `cron`
+
+This example demonstrates how to use `cron` to schedule the tool to synchronize
+every four hours and send a monthly report. Open your crontab with `crontab -e`
+and add the following lines, replacing the path as needed:
+
+```sh
+0 */4 * * * cd /home/USERNAME/contract-automation && /usr/local/bin/docker-compose -f docker-compose.yml run --service-ports --rm node sync
+0 0 1 * * * cd /home/USERNAME/contract-automation && /usr/local/bin/docker-compose -f docker-compose.yml run --service-ports --rm node report
+```
