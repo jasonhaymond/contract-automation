@@ -19,8 +19,8 @@ function buildTable({ headers, data, caption }) {
         .join("");
 
     const bodyHTML = `<tbody>${dataCells}</tbody>`;
-    const captionHTML = caption ? `<caption>${caption}</caption>` : "";
-    return `<table>${captionHTML + headerHTML + bodyHTML}</table>`;
+    const captionHTML = caption ? `<h2>${caption}</h2>` : "";
+    return `${captionHTML}<table>${headerHTML + bodyHTML}</table>`;
 }
 
 function buildHTML({ title = "", body }) {
@@ -32,8 +32,21 @@ function buildHTML({ title = "", body }) {
         <title>${title}</title>
         <style>
             table {
-                border: 3px solid blue;
-                border-collapse: collapse;
+                border: 3px solid #bbb;
+                border-collapse: separate;
+                border-spacing: 0;
+                border-radius: 15px;
+                width: 100%;
+                max-width: 600px;
+            }
+
+            thead tr {
+                border-bottom: 2px solid black;
+                background-color: #ddd;
+            }
+
+            tr:nth-child(even) {
+                background-color: #eee;
             }
 
             th, td {
@@ -41,13 +54,13 @@ function buildHTML({ title = "", body }) {
                 text-align: left;
             }
 
-            caption {
+            th {
                 font-weight: bold;
-                padding: 20px;
             }
         </style>
     </head>
     <body>
+        <h1>${title}</h1>
         ${body}
     </body>
 </html>

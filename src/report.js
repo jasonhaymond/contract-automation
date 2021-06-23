@@ -53,17 +53,21 @@ const sendReport = async () => {
         };
     });
 
-    const title = "Datto RMM Report";
+    const currentDate = new Date().toLocaleDateString();
+    const title = `Datto RMM Report — ${currentDate}`;
     const summaryTable = buildTable({
         headers: summaryHeaders,
         data: drmmReport,
         caption: "Summary",
     });
-    const changesTable = buildTable({
-        headers: changeHeaders,
-        data: changes,
-        caption: "Changes",
-    });
+    const changesTable =
+        changes.length > 0
+            ? buildTable({
+                  headers: changeHeaders,
+                  data: changes,
+                  caption: "Changes",
+              })
+            : "";
 
     const html = buildHTML({ body: summaryTable + changesTable, title });
     Graph.sendEmail(title, process.env.EMAIL_RECIPIENT, html);
