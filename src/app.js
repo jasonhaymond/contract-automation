@@ -6,6 +6,7 @@ switch (process.argv[2]) {
         syncDattoRmm();
         break;
     case "report":
-        sendReport();
+        const preview = process.argv[3] === "--preview";
+        sendReport(preview);
         break;
 }

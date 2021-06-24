@@ -6,7 +6,7 @@ const { Database } = require("./models/db");
 const getDeviceCountByType = (devices, type) =>
     devices.filter((device) => device.type === type).length;
 
-const sendReport = async () => {
+const sendReport = async (preview) => {
     const summaryHeaders = [
         {
             name: "Site",
@@ -37,7 +37,7 @@ const sendReport = async () => {
     const db = getDb();
     const sites = Database.getDattoRmmSites(db);
     const devices = Database.getDattoRmmDevices(db);
-    const changes = Database.runReport(db);
+    const changes = Database.runReport(db, preview);
     const drmmReport = sites.map((site) => {
         const siteDevices = devices.filter(
             (device) => device.siteId === site.id

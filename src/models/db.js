@@ -258,7 +258,7 @@ const Database = {
         return db.prepare(deleteSql).run(uid);
     },
 
-    runReport(db) {
+    runReport(db, preview) {
         const lastReportSql = `
             SELECT report_timestamp
             FROM report
@@ -298,7 +298,9 @@ const Database = {
             db.prepare(lastReportSql).pluck().get() || 0;
 
         const now = Date.now();
-        db.prepare(createReportSql).run(now);
+
+        if (!preview) db.prepare(createReportSql).run(now);
+
         return db
             .prepare(recentLogEntriesSql)
             .all(lastReportTimestamp, now)

@@ -20,14 +20,23 @@ Reboot your machine, and then run:
 git clone git@github.com:jasonhaymond/contract-automation.git
 cd contract-automation
 cp .env.example .env
+$EDITOR .env
 ```
 
 Add your API keys and other environment variables to `.env`
-using your favorite text editor.
+and save the changes.
 
 ## Usage
 
-To run the app in production mode, use this command:
+Before running the app, and after updating the code with
+`git pull`, you need to build the Docker container:
+
+```sh
+docker-compose build
+```
+
+To run the app in production mode, use this command
+(see below for possible values of `[COMMAND]`):
 
 ```sh
 docker-compose -f docker-compose.yml run --service-ports --rm node [COMMAND]
@@ -42,7 +51,8 @@ docker-compose run --service-ports --rm node [COMMAND]
 `[COMMAND]` can be one of the following:
 
 -   `sync` will synchronize the latest data from vendors (default)
--   `report` sends an email report using current database data
+-   `report` sends an email report using current database data.  
+     Add `--preview` to send a report without recording it in the database.
 
 `sync` should be run every few hours. `report` can be run at any desired interval;
 it will list all changes since the last report. A monthly report is typical.
