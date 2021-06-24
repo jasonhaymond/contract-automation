@@ -1,4 +1,4 @@
-const { Client } = require("../data/graph");
+const { GraphClient } = require("../data/graph");
 
 const { EMAIL_SENDER } = process.env;
 
@@ -12,13 +12,14 @@ const Graph = {
                 content: body,
             },
         };
-        try {
-            await Client.api(`/users/${EMAIL_SENDER}/sendMail`).post({
-                message,
-            });
-        } catch (err) {
-            console.error(err);
-        }
+
+        await GraphClient.api(`/users/${EMAIL_SENDER}/sendMail`).post({
+            message,
+        });
+    },
+
+    async getTenants() {
+        return await GraphClient.api("/contracts").get();
     },
 };
 
