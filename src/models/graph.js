@@ -1,6 +1,16 @@
-const { GraphClient } = require("../data/graph");
+const { GraphClient, createClient } = require("../data/graph");
 
 const { EMAIL_SENDER } = process.env;
+
+function buildClientModel(tenantID) {
+    const client = createClient(tenantID);
+
+    return {
+        async getUsers() {
+            return (await client.api("/users").get()).value;
+        },
+    };
+}
 
 const Graph = {
     async sendEmail(subject, to, body) {
@@ -18,8 +28,12 @@ const Graph = {
         });
     },
 
-    async getTenants() {
-        return await GraphClient.api("/contracts").get();
+    async getContracts() {
+        const rawContracts = (await GraphClient.api("/contracts").get()).value;
+        const wrappedContracts = rawContracts.map((contract) => ({
+            getClientModel: buildClientModel(contract.customerId),
+            ...contract,
+        }));
     },
 };
 

@@ -7,7 +7,7 @@ const { Database } = require("./models/db");
 const getDeviceCountByType = (devices, type) =>
     devices.filter((device) => device.type === type).length;
 
-const sendReport = async (current) => {
+const sendDattoRmmReport = async (current) => {
     const summaryHeaders = [
         {
             name: "Site",
@@ -89,5 +89,5 @@ const sendReport = async (current) => {
 };
 
 module.exports = {
-    sendReport,
+    sendDattoRmmReport,
 };

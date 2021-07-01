@@ -1,4 +1,4 @@
-const { sendReport } = require("./report");
+const { sendAllReports } = require("./report");
 const { syncDattoRmm } = require("./sync");
 
 switch (process.argv[2]) {
@@ -7,6 +7,6 @@ switch (process.argv[2]) {
         break;
     case "report":
         const current = process.argv[3] === "--current";
-        sendReport(current);
+        sendAllReports(current);
         break;
 }
