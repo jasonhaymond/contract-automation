@@ -1,10 +1,22 @@
-const { GraphClient } = require("../data/graph");
+const { GraphClient, createClient } = require("../data/graph");
 
 const { EMAIL_SENDER } = process.env;
 
-const createRecipient = (addr) => ({
-    emailAddress: { address: addr.trim() },
-});
+function createRecipient(addr) {
+    return {
+        emailAddress: { address: addr.trim() },
+    };
+}
+
+function buildClientModel(tenantID) {
+    const client = createClient(tenantID);
+
+    return {
+        async getUsers() {
+            return (await client.api("/users").get()).value;
+        },
+    };
+}
 
 const Graph = {
     async sendEmail(subject, to, body) {
@@ -20,6 +32,14 @@ const Graph = {
         await GraphClient.api(`/users/${EMAIL_SENDER}/sendMail`).post({
             message,
         });
+    },
+
+    async getContracts() {
+        const rawContracts = (await GraphClient.api("/contracts").get()).value;
+        const wrappedContracts = rawContracts.map((contract) => ({
+            getClientModel: buildClientModel(contract.customerId),
+            ...contract,
+        }));
     },
 };
 
