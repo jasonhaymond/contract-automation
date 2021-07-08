@@ -1,12 +1,13 @@
 const { getDb } = require("./data/db");
 const { buildTable, buildHTML } = require("./lib/html");
+const { getMonthRange, getMonthAndYear, addMonths } = require("./lib/time");
 const { Graph } = require("./models/graph");
 const { Database } = require("./models/db");
 
 const getDeviceCountByType = (devices, type) =>
     devices.filter((device) => device.type === type).length;
 
-const sendReport = async (preview) => {
+const sendReport = async (current) => {
     const summaryHeaders = [
         {
             name: "Site",
@@ -15,12 +16,18 @@ const sendReport = async (preview) => {
         },
         {
             name: "Workstations",
-            value: (site) =>
-                site.deviceCounts.desktops + site.deviceCounts.laptops,
+            value: ({ deviceCounts: { desktops, laptops } }) =>
+                desktops + laptops,
         },
         {
             name: "Servers",
             value: (site) => site.deviceCounts.servers,
+        },
+        {
+            name: "Total",
+            header: true,
+            value: ({ deviceCounts: { desktops, laptops, servers } }) =>
+                servers + desktops + laptops,
         },
     ];
 
@@ -35,9 +42,9 @@ const sendReport = async (preview) => {
     ];
 
     const db = getDb();
+
     const sites = Database.getDattoRmmSites(db);
     const devices = Database.getDattoRmmDevices(db);
-    const changes = Database.runReport(db, preview);
     const drmmReport = sites.map((site) => {
         const siteDevices = devices.filter(
             (device) => device.siteId === site.id
@@ -53,13 +60,21 @@ const sendReport = async (preview) => {
         };
     });
 
-    const currentDate = new Date().toLocaleDateString();
-    const title = `Datto RMM Report — ${currentDate}`;
+    let reportDate = new Date();
+    if (!current) {
+        reportDate.setDate(1); // Handle different month lengths
+        reportDate = addMonths(reportDate, -1);
+    }
+    const { start, end } = getMonthRange(reportDate);
+
+    const title = `Datto RMM Report — ${getMonthAndYear(reportDate)}`;
     const summaryTable = buildTable({
         headers: summaryHeaders,
         data: drmmReport,
         caption: "Summary",
     });
+
+    const changes = Database.getDattoRmmLogs(db, start, end);
     const changesTable =
         changes.length > 0
             ? buildTable({

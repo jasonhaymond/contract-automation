@@ -258,15 +258,8 @@ const Database = {
         return db.prepare(deleteSql).run(uid);
     },
 
-    runReport(db, preview) {
-        const lastReportSql = `
-            SELECT report_timestamp
-            FROM report
-            ORDER BY report_timestamp DESC
-            LIMIT 1;
-        `;
-
-        const recentLogEntriesSql = `
+    getDattoRmmLogs(db, from, to) {
+        const getLogEntriesSql = `
             SELECT
                 drmm_device_log_id,
                 drmm_device_log_timestamp,
@@ -280,30 +273,16 @@ const Database = {
             INNER JOIN drmm_site
                ON drmm_site.drmm_site_id = drmm_device_log.drmm_site_id
             WHERE
-                drmm_device_log_timestamp > ?
-                AND drmm_device_log_timestamp <= ?
+                drmm_device_log_timestamp >= ?
+                AND drmm_device_log_timestamp < ?
             ORDER BY
                 drmm_site_name,
                 drmm_device_log_timestamp DESC;
         `;
 
-        const createReportSql = `
-            INSERT INTO report (
-                report_timestamp
-            )
-            VALUES (?);
-        `;
-
-        const lastReportTimestamp =
-            db.prepare(lastReportSql).pluck().get() || 0;
-
-        const now = Date.now();
-
-        if (!preview) db.prepare(createReportSql).run(now);
-
         return db
-            .prepare(recentLogEntriesSql)
-            .all(lastReportTimestamp, now)
+            .prepare(getLogEntriesSql)
+            .all(from.getTime(), to.getTime())
             .map(transformLogEntryFromDb);
     },
 };

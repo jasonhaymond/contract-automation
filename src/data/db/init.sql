@@ -1,10 +1,5 @@
 PRAGMA foreign_keys = ON;
 
-CREATE TABLE IF NOT EXISTS report (
-    report_id                   INTEGER PRIMARY KEY,
-    report_timestamp            INTEGER NOT NULL
-);
-
 CREATE TABLE IF NOT EXISTS drmm_site (
     drmm_site_id                INTEGER PRIMARY KEY,
     drmm_site_uid               CHAR(36) NOT NULL UNIQUE,
