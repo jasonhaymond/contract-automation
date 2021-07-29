@@ -37,9 +37,11 @@ const Graph = {
     async getContracts() {
         const rawContracts = (await GraphClient.api("/contracts").get()).value;
         const wrappedContracts = rawContracts.map((contract) => ({
-            getClientModel: buildClientModel(contract.customerId),
+            getClientModel: () => buildClientModel(contract.customerId),
             ...contract,
         }));
+
+        return wrappedContracts;
     },
 };
 
