@@ -17,10 +17,6 @@ const Graph = {
             message,
         });
     },
-
-    async getTenants() {
-        return await GraphClient.api("/contracts").get();
-    },
 };
 
 module.exports = {
