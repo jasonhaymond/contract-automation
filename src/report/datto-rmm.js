@@ -1,8 +1,8 @@
-const { getDb } = require("./data/db");
-const { buildTable, buildHTML } = require("./lib/html");
-const { getMonthRange, getMonthAndYear, addMonths } = require("./lib/time");
-const { Graph } = require("./models/graph");
-const { Database } = require("./models/db");
+const { getDb } = require("../data/db");
+const { buildTable, buildHTML } = require("../lib/html");
+const { getMonthRange, getMonthAndYear, addMonths } = require("../lib/time");
+const { Graph } = require("../models/graph");
+const { Database } = require("../models/db");
 
 const getDeviceCountByType = (devices, type) =>
     devices.filter((device) => device.type === type).length;

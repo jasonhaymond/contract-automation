@@ -1,4 +1,4 @@
-const { getDb } = require("../../data/db");
+const { getDb } = require("../data/db");
 const { syncDattoRmm } = require("./datto-rmm");
 
 function buildSyncRunner(syncFn) {
