@@ -85,7 +85,8 @@ const sendDattoRmmReport = async (current) => {
             : "";
 
     const html = buildHTML({ body: summaryTable + changesTable, title });
-    Graph.sendEmail(title, process.env.EMAIL_RECIPIENT, html);
+    const recipients = process.env.EMAIL_RECIPIENTS.split(",");
+    Graph.sendEmail(title, recipients, html);
 };
 
 module.exports = {

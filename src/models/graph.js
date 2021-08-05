@@ -2,11 +2,15 @@ const { GraphClient } = require("../data/graph");
 
 const { EMAIL_SENDER } = process.env;
 
+const createRecipient = (addr) => ({
+    emailAddress: { address: addr.trim() },
+});
+
 const Graph = {
     async sendEmail(subject, to, body) {
         const message = {
             subject,
-            toRecipients: [{ emailAddress: { address: to } }],
+            toRecipients: to.map(createRecipient),
             body: {
                 contentType: "html",
                 content: body,
