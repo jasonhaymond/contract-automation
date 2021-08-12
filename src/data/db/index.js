@@ -1,6 +1,6 @@
 const fs = require("fs");
 const path = require("path");
-const Database = require("better-sqlite3-with-prebuilds");
+const Database = require("better-sqlite3");
 
 const { DB_PATH = ":memory:" } = process.env;
 const dbInitScriptPath = path.join(__dirname, "init.sql");

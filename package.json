@@ -5,10 +5,10 @@
         "start": "node -r dotenv/config --inspect-brk src/app.js"
     },
     "dependencies": {
-        "@microsoft/microsoft-graph-client": "^2.2.1",
-        "better-sqlite3-with-prebuilds": "^7.1.7",
+        "@microsoft/microsoft-graph-client": "^3.0.0",
+        "better-sqlite3": "^7.4.3",
         "debug": "^4.3.1",
-        "dotenv": "^9.0.2",
+        "dotenv": "^10.0.0",
         "isomorphic-fetch": "^3.0.0"
     },
     "devDependencies": {
