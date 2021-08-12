@@ -13,7 +13,18 @@ function buildClientModel(tenantID) {
 
     return {
         async getUsers() {
-            return (await client.api("/users").get()).value;
+            return (
+                await client
+                    .api("/users")
+                    .select(
+                        "id,userPrincipalName,displayName,givenName,surname,assignedLicenses"
+                    )
+                    .get()
+            ).value;
+        },
+
+        async getSubscribedSkus() {
+            return (await client.api("/subscribedSkus").get()).value;
         },
     };
 }

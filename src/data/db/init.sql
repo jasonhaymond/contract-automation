@@ -28,3 +28,18 @@ CREATE TABLE IF NOT EXISTS drmm_device_log (
     drmm_device_hostname        NVARCHAR(255) NOT NULL,
     FOREIGN KEY (drmm_site_id)  REFERENCES drmm_site (drmm_site_id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS ms_user (
+    ms_user_id                  INTEGER PRIMARY KEY,
+    ms_user_uid                 CHAR(36) NOT NULL UNIQUE,
+    ms_user_user_principal_name NVARCHAR(128) NOT NULL UNIQUE,
+    ms_user_display_name        NVARCHAR(128) NOT NULL,
+    ms_user_given_name          NVARCHAR(64),
+    ms_user_surname             NVARCHAR(64)
+);
+
+CREATE TABLE IF NOT EXISTS ms_sku (
+    ms_sku_id                   INTEGER PRIMARY KEY,
+    ms_sku_sku_id               CHAR(36) NOT NULL,
+    ms_sku_part_number          VARCHAR(128) NOT NULL
+);
