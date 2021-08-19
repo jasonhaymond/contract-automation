@@ -2,11 +2,12 @@ const { Graph } = require("../../models/graph");
 
 async function syncMicrosoft(db) {
     const contracts = await Graph.getContracts();
-    const model = contracts[0].getClientModel();
-    const users = await model.getUsers();
-    console.log(users);
-    const skus = await model.getSubscribedSkus();
-    console.log(skus);
+    const clients = contracts.map((contract) => contract.getClientModel());
+    const tenants = await Promise.all(
+        clients.map((client) => client.getTenant())
+    );
+
+    console.log(tenants);
 }
 
 module.exports = {

@@ -8,23 +8,52 @@ function createRecipient(addr) {
     };
 }
 
+const transformTenant = ({ id: uid, displayName: name }) => ({ uid, name });
+
+const transformUser = ({
+    id: uid,
+    userPrincipalName,
+    displayName,
+    givenName,
+    surname,
+}) => ({
+    uid,
+    userPrincipalName,
+    displayName,
+    givenName,
+    surname,
+});
+
+const transformSku = ({ id: uid, skuId, skuPartNumber }) => ({
+    uid,
+    skuId,
+    skuPartNumber,
+});
+
 function buildClientModel(tenantID) {
     const client = createClient(tenantID);
 
     return {
+        async getTenant() {
+            const response = await client.api("/organization").get();
+            return transformTenant(response.value[0]);
+        },
+
         async getUsers() {
-            return (
-                await client
-                    .api("/users")
-                    .select(
-                        "id,userPrincipalName,displayName,givenName,surname,assignedLicenses"
-                    )
-                    .get()
-            ).value;
+            const response = await client
+                .api("/users")
+                .select(
+                    "id,userPrincipalName,displayName,givenName,surname,assignedLicenses"
+                )
+                .get();
+
+            return response.value.map(transformUser);
         },
 
         async getSubscribedSkus() {
-            return (await client.api("/subscribedSkus").get()).value;
+            const response = await client.api("/subscribedSkus").get();
+
+            return response.value.map(transformSku);
         },
     };
 }
@@ -47,10 +76,13 @@ const Graph = {
 
     async getContracts() {
         const rawContracts = (await GraphClient.api("/contracts").get()).value;
-        const wrappedContracts = rawContracts.map((contract) => ({
-            getClientModel: () => buildClientModel(contract.customerId),
-            ...contract,
-        }));
+        const wrappedContracts = rawContracts.map(
+            ({ customerId: id, displayName }) => ({
+                getClientModel: () => buildClientModel(id),
+                id,
+                displayName,
+            })
+        );
 
         return wrappedContracts;
     },
