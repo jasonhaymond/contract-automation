@@ -197,7 +197,7 @@ const Database = {
 
         const siteId = getSiteIdFromUid(db, siteUid);
         if (!siteId) {
-            this.deleteDattoRmmDevice(db, device);
+            this.deleteDattoRmmDevice(db, $source);
             return;
         }
 
@@ -243,7 +243,7 @@ const Database = {
 
         const { siteUid, type, hostname } = device;
 
-        const siteId = getSiteIdFromUid(siteUid);
+        const siteId = getSiteIdFromUid(db, siteUid);
         const uid = device.uid;
 
         db.prepare(logSql).run(
