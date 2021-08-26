@@ -1,13 +1,13 @@
 const { Graph } = require("../../models/graph");
+const { syncSkus } = require("./skus");
+const { syncTenants } = require("./tenants");
 
 async function syncMicrosoft(db) {
     const contracts = await Graph.getContracts();
     const clients = contracts.map((contract) => contract.getClientModel());
-    const tenants = await Promise.all(
-        clients.map((client) => client.getTenant())
-    );
 
-    console.log(tenants);
+    await syncTenants(db, clients);
+    await syncSkus(db, clients);
 }
 
 module.exports = {

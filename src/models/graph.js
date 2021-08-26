@@ -50,7 +50,7 @@ function buildClientModel(tenantID) {
             return response.value.map(transformUser);
         },
 
-        async getSubscribedSkus() {
+        async getSkus() {
             const response = await client.api("/subscribedSkus").get();
 
             return response.value.map(transformSku);

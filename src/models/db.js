@@ -35,6 +35,29 @@ const getSiteIdFromUid = (db, uid) => {
     return site ? site.drmm_site_id : null;
 };
 
+const transformMsTenantFromDb = (tenant) => ({
+    id: tenant.ms_tenant_id,
+    uid: tenant.ms_tenant_uid,
+    name: tenant.ms_tenant_name,
+});
+
+const transformMsSkuFromDb = (sku) => ({
+    id: sku.ms_sku_id,
+    uid: sku.ms_sku_uid,
+    tenantId: sku.ms_tenant_id,
+    tenantUid: sku.ms_tenant_uid,
+    skuId: sku.ms_sku_sku_id,
+    skuPartNumber: sku.ms_sku_part_number,
+});
+
+const getMsTenantIdFromUid = (db, uid) => {
+    const tenant = db
+        .prepare("SELECT ms_tenant_id FROM ms_tenant WHERE ms_tenant_uid = ?;")
+        .get(uid);
+
+    return tenant ? tenant.ms_tenant_id : null;
+};
+
 const Database = {
     getDattoRmmSites(db) {
         const sql = `
@@ -126,6 +149,7 @@ const Database = {
         `;
 
         const {
+            uid,
             siteUid,
             type,
             hostname,
@@ -136,8 +160,6 @@ const Database = {
 
         const siteId = getSiteIdFromUid(db, siteUid);
         if (!siteId) return;
-
-        const uid = device.uid;
 
         db.prepare(logSql).run(
             Date.now(),
@@ -286,6 +308,105 @@ const Database = {
             .prepare(getLogEntriesSql)
             .all(from.getTime(), to.getTime())
             .map(transformLogEntryFromDb);
+    },
+
+    getMsTenants(db) {
+        const sql = `
+            SELECT
+                ms_tenant_id,
+                ms_tenant_uid,
+                ms_tenant_name
+            FROM ms_tenant;
+        `;
+
+        return db.prepare(sql).all().map(transformMsTenantFromDb);
+    },
+
+    createMsTenant(db, tenant) {
+        const sql = `
+            INSERT INTO ms_tenant (ms_tenant_uid, ms_tenant_name)
+            VALUES (?, ?);
+        `;
+
+        const { uid, name } = tenant;
+        return db.prepare(sql).run(uid, name);
+    },
+
+    updateMsTenant(db, tenant) {
+        const sql = `
+            UPDATE ms_tenant
+            SET ms_tenant_name = ?
+            WHERE ms_tenant_uid = ?;
+        `;
+
+        const { uid, name } = tenant;
+        return db.prepare(sql).run(name, uid);
+    },
+
+    deleteMsTenant(db, tenant) {
+        const sql = `
+            DELETE FROM ms_tenant
+            WHERE ms_tenant_uid = ?;
+        `;
+
+        return db.prepare(sql).run(tenant.uid);
+    },
+
+    getMsSkus(db) {
+        const sql = `
+            SELECT
+                ms_sku_id,
+                ms_sku_uid,
+                ms_tenant_id,
+                ms_tenant_uid,
+                ms_sku_sku_id,
+                ms_sku_part_number
+            FROM ms_sku
+            NATURAL JOIN ms_tenant;
+        `;
+
+        return db.prepare(sql).all().map(transformMsSkuFromDb);
+    },
+
+    createMsSku(db, sku) {
+        const sql = `
+            INSERT INTO ms_sku (
+                ms_sku_uid,
+                ms_tenant_id,
+                ms_sku_sku_id,
+                ms_sku_part_number
+            )
+            VALUES (?, ?, ?, ?);
+        `;
+
+        const { uid, tenantUid, skuId, skuPartNumber } = sku;
+
+        const tenantId = getMsTenantIdFromUid(tenantUid);
+        if (!tenantId) return;
+
+        return db.prepare(sql).run(uid, tenantId, skuId, skuPartNumber);
+    },
+
+    updateMsSku(db, sku) {
+        const sql = `
+            UPDATE ms_sku
+            SET ms_sku_sku_id = ?,
+                ms_sku_part_number = ?
+            WHERE ms_sku_uid = ?;
+
+        `;
+
+        const { uid, skuId, skuPartNumber, $source } = sku;
+        return db.prepare(sql).run(skuId, skuPartNumber, uid);
+    },
+
+    deleteMsSku(db, sku) {
+        const sql = `
+            DELETE FROM ms_sku
+            WHERE ms_sku_uid = ?;
+        `;
+
+        return db.prepare(sql).run(sku.uid);
     },
 };
 
