@@ -352,7 +352,7 @@ const Database = {
         return db.prepare(sql).run(tenant.uid);
     },
 
-    getMsSkus(db) {
+    getMsSkusByTenantUid(db, tenantUid) {
         const sql = `
             SELECT
                 ms_sku_id,
@@ -362,10 +362,11 @@ const Database = {
                 ms_sku_sku_id,
                 ms_sku_part_number
             FROM ms_sku
-            NATURAL JOIN ms_tenant;
+            NATURAL JOIN ms_tenant
+            WHERE ms_tenant_uid = ?;
         `;
 
-        return db.prepare(sql).all().map(transformMsSkuFromDb);
+        return db.prepare(sql).all(tenantUid).map(transformMsSkuFromDb);
     },
 
     createMsSku(db, sku) {
@@ -381,7 +382,7 @@ const Database = {
 
         const { uid, tenantUid, skuId, skuPartNumber } = sku;
 
-        const tenantId = getMsTenantIdFromUid(tenantUid);
+        const tenantId = getMsTenantIdFromUid(db, tenantUid);
         if (!tenantId) return;
 
         return db.prepare(sql).run(uid, tenantId, skuId, skuPartNumber);

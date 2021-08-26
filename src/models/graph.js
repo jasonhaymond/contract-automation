@@ -24,16 +24,21 @@ const transformUser = ({
     surname,
 });
 
-const transformSku = ({ id: uid, skuId, skuPartNumber }) => ({
-    uid,
-    skuId,
-    skuPartNumber,
-});
+const transformSku =
+    (tenantUid) =>
+    ({ id: uid, skuId, skuPartNumber }) => ({
+        uid,
+        tenantUid,
+        skuId,
+        skuPartNumber,
+    });
 
-function buildClientModel(tenantID) {
-    const client = createClient(tenantID);
+function buildClientModel(tenantUid) {
+    const client = createClient(tenantUid);
 
     return {
+        uid: tenantUid,
+
         async getTenant() {
             const response = await client.api("/organization").get();
             return transformTenant(response.value[0]);
@@ -53,7 +58,7 @@ function buildClientModel(tenantID) {
         async getSkus() {
             const response = await client.api("/subscribedSkus").get();
 
-            return response.value.map(transformSku);
+            return response.value.map(transformSku(tenantUid));
         },
     };
 }
@@ -77,9 +82,9 @@ const Graph = {
     async getContracts() {
         const rawContracts = (await GraphClient.api("/contracts").get()).value;
         const wrappedContracts = rawContracts.map(
-            ({ customerId: id, displayName }) => ({
-                getClientModel: () => buildClientModel(id),
-                id,
+            ({ customerId: uid, displayName }) => ({
+                getClientModel: () => buildClientModel(uid),
+                uid,
                 displayName,
             })
         );
