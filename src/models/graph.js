@@ -10,19 +10,26 @@ function createRecipient(addr) {
 
 const transformTenant = ({ id: uid, displayName: name }) => ({ uid, name });
 
-const transformUser = ({
-    id: uid,
-    userPrincipalName,
-    displayName,
-    givenName,
-    surname,
-}) => ({
-    uid,
-    userPrincipalName,
-    displayName,
-    givenName,
-    surname,
-});
+const transformUser =
+    (tenantUid) =>
+    ({
+        id: uid,
+        userPrincipalName,
+        displayName,
+        givenName,
+        surname,
+        assignedLicenses,
+        assignedPlans,
+    }) => ({
+        uid,
+        tenantUid,
+        userPrincipalName,
+        displayName,
+        givenName,
+        surname,
+        assignedLicenses,
+        assignedPlans,
+    });
 
 const transformSku =
     (tenantUid) =>
@@ -48,11 +55,11 @@ function buildClientModel(tenantUid) {
             const response = await client
                 .api("/users")
                 .select(
-                    "id,userPrincipalName,displayName,givenName,surname,assignedLicenses"
+                    "id,userPrincipalName,displayName,givenName,surname,assignedLicenses,assignedPlans"
                 )
                 .get();
 
-            return response.value.map(transformUser);
+            return response.value.map(transformUser(tenantUid));
         },
 
         async getSkus() {

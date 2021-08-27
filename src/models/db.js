@@ -50,6 +50,17 @@ const transformMsSkuFromDb = (sku) => ({
     skuPartNumber: sku.ms_sku_part_number,
 });
 
+const transformMsUserFromDb = (user) => ({
+    id: user.ms_user_id,
+    uid: user.ms_user_uid,
+    tenantId: user.ms_tenant_id,
+    tenantUid: user.ms_tenant_uid,
+    userPrincipalName: user.ms_user_user_principal_name,
+    displayName: user.ms_user_display_name,
+    givenName: user.ms_user_given_name,
+    surname: user.ms_user_surname,
+});
+
 const getMsTenantIdFromUid = (db, uid) => {
     const tenant = db
         .prepare("SELECT ms_tenant_id FROM ms_tenant WHERE ms_tenant_uid = ?;")
@@ -397,7 +408,7 @@ const Database = {
 
         `;
 
-        const { uid, skuId, skuPartNumber, $source } = sku;
+        const { uid, skuId, skuPartNumber } = sku;
         return db.prepare(sql).run(skuId, skuPartNumber, uid);
     },
 
@@ -408,6 +419,89 @@ const Database = {
         `;
 
         return db.prepare(sql).run(sku.uid);
+    },
+
+    getMsUsersByTenantUid(db, tenantUid) {
+        const sql = `
+            SELECT
+                ms_user_id,
+                ms_user_uid,
+                ms_tenant_id,
+                ms_tenant_uid,
+                ms_user_user_principal_name,
+                ms_user_display_name,
+                ms_user_given_name,
+                ms_user_surname
+            FROM ms_user
+            NATURAL JOIN ms_tenant
+            WHERE ms_tenant_uid = ?;
+        `;
+
+        return db.prepare(sql).all(tenantUid).map(transformMsUserFromDb);
+    },
+
+    createMsUser(db, user) {
+        const sql = `
+            INSERT INTO ms_user (
+                ms_user_uid,
+                ms_tenant_id,
+                ms_user_user_principal_name,
+                ms_user_display_name,
+                ms_user_given_name,
+                ms_user_surname
+            )
+            VALUES (?, ?, ?, ?, ?, ?);
+        `;
+
+        const {
+            uid,
+            tenantUid,
+            userPrincipalName,
+            displayName,
+            givenName,
+            surname,
+        } = user;
+
+        const tenantId = getMsTenantIdFromUid(db, tenantUid);
+        if (!tenantId) return;
+
+        return db
+            .prepare(sql)
+            .run(
+                uid,
+                tenantId,
+                userPrincipalName,
+                displayName,
+                givenName,
+                surname
+            );
+    },
+
+    updateMsUser(db, user) {
+        const sql = `
+            UPDATE ms_user
+            SET ms_user_user_principal_name = ?,
+                ms_user_display_name = ?,
+                ms_user_given_name = ?,
+                ms_user_surname = ?
+            WHERE ms_user_uid = ?;
+
+        `;
+
+        const { uid, userPrincipalName, displayName, givenName, surname } =
+            user;
+        return db
+            .prepare(sql)
+            .run(userPrincipalName, displayName, givenName, surname, uid);
+    },
+
+    deleteMsUser(db, user) {
+        const sql = `
+            DELETE FROM ms_user
+            WHERE ms_user_uid = ?;
+        `;
+
+        return db.prepare(sql).run(user.uid);
     },
 };
 
