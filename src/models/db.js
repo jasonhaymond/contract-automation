@@ -42,7 +42,8 @@ const Database = {
                 drmm_site_id,
                 drmm_site_uid,
                 drmm_site_name
-            FROM drmm_site;
+            FROM drmm_site
+            ORDER BY drmm_site_name;
         `;
 
         return db.prepare(sql).all().map(transformSiteFromDb);
@@ -91,7 +92,8 @@ const Database = {
                 drmm_device_ipv4_int,
                 drmm_device_ipv4_ext
             FROM drmm_device
-            NATURAL JOIN drmm_site;
+            NATURAL JOIN drmm_site
+            ORDER BY drmm_device_hostname;
         `;
 
         return db.prepare(sql).all().map(transformDeviceFromDb);
