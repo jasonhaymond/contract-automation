@@ -78,6 +78,14 @@ const getMsTenantIdFromUid = (db, uid) => {
     return tenant ? tenant.ms_tenant_id : null;
 };
 
+const getMsUserIdFromUid = (db, uid) => {
+    const user = db
+        .prepare("SELECT ms_user_id FROM ms_user WHERE ms_user_uid = ?;")
+        .get(uid);
+
+    return user ? user.ms_user_id : null;
+};
+
 const Database = {
     getDattoRmmSites(db) {
         const sql = `
@@ -637,7 +645,7 @@ const Database = {
         return db.prepare(sql).all(skuId).map(transformMsSkuAssignmentFromDb);
     },
 
-    getMsSkuAssignmentsByUserId(db, userId) {
+    getMsSkuAssignmentsByUserUid(db, userUid) {
         const sql = `
             SELECT
                 ms_sku_assignment_id,
@@ -655,14 +663,13 @@ const Database = {
                 ms_sku_part_number,
                 ms_sku_unit_count
             FROM ms_sku_assignment
-            NATURAL JOIN
             NATURAL JOIN ms_user
             NATURAL JOIN ms_sku
             NATURAL JOIN ms_tenant
-            WHERE ms_user_id = ?;
+            WHERE ms_user_uid = ?;
         `;
 
-        return db.prepare(sql).all(userId).map(transformMsSkuAssignmentFromDb);
+        return db.prepare(sql).all(userUid).map(transformMsSkuAssignmentFromDb);
     },
 
     deleteMsSkuAssignment(db, assignment) {
@@ -688,7 +695,32 @@ const Database = {
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
         `;
 
-        const { id, tenantId, user, sku } = assignment;
+        const {
+            id,
+            tenantId,
+            user: {
+                uid: userUid,
+                userPrincipalName,
+                displayName,
+                givenName,
+                surname,
+            },
+            sku: { uid: skuUid, skuId, skuPartNumber },
+        } = assignment;
+
+        db.prepare(logSql).run(
+            Date.now(),
+            "delete",
+            tenantId,
+            userUid,
+            userPrincipalName,
+            displayName,
+            givenName,
+            surname,
+            skuUid,
+            skuId,
+            skuPartNumber
+        );
 
         return db.prepare(sql).run(id);
     },
