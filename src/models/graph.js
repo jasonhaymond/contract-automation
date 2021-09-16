@@ -33,11 +33,17 @@ const transformUser =
 
 const transformSku =
     (tenantUid) =>
-    ({ id: uid, skuId, skuPartNumber }) => ({
+    ({
+        id: uid,
+        skuId,
+        skuPartNumber,
+        prepaidUnits: { enabled: unitCount },
+    }) => ({
         uid,
         tenantUid,
         skuId,
         skuPartNumber,
+        unitCount,
     });
 
 function buildClientModel(tenantUid) {

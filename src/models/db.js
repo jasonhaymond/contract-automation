@@ -48,6 +48,7 @@ const transformMsSkuFromDb = (sku) => ({
     tenantUid: sku.ms_tenant_uid,
     skuId: sku.ms_sku_sku_id,
     skuPartNumber: sku.ms_sku_part_number,
+    unitCount: sku.ms_sku_unit_count,
 });
 
 const transformMsUserFromDb = (user) => ({
@@ -59,6 +60,14 @@ const transformMsUserFromDb = (user) => ({
     displayName: user.ms_user_display_name,
     givenName: user.ms_user_given_name,
     surname: user.ms_user_surname,
+});
+
+const transformMsSkuAssignmentFromDb = (assignment) => ({
+    id: assignment.ms_sku_assignment_id,
+    tenantId: assignment.ms_tenant_id,
+    tenantUid: assignment.ms_tenant_uid,
+    user: transformMsUserFromDb(assignment),
+    sku: transformMsSkuFromDb(assignment),
 });
 
 const getMsTenantIdFromUid = (db, uid) => {
@@ -232,7 +241,8 @@ const Database = {
 
         const siteId = getSiteIdFromUid(db, siteUid);
         if (!siteId) {
-            this.deleteDattoRmmDevice(db, $source);
+            device.siteUid = $source.siteUid;
+            this.deleteDattoRmmDevice(db, device);
             return;
         }
 
@@ -276,10 +286,15 @@ const Database = {
             VALUES (?, ?, ?, ?, ?, ?);
         `;
 
+<<<<<<< HEAD
         const { siteUid, type, hostname } = device;
 
         const siteId = getSiteIdFromUid(db, siteUid);
         const uid = device.uid;
+=======
+        const { siteUid, uid, type, hostname } = device;
+        const siteId = getSiteIdFromUid(db, siteUid);
+>>>>>>> f41e075 (Work on assignment sync)
 
         db.prepare(logSql).run(
             Date.now(),
@@ -386,30 +401,86 @@ const Database = {
                 ms_sku_uid,
                 ms_tenant_id,
                 ms_sku_sku_id,
-                ms_sku_part_number
+                ms_sku_part_number,
+                ms_sku_unit_count
             )
-            VALUES (?, ?, ?, ?);
+            VALUES (?, ?, ?, ?, ?);
         `;
 
-        const { uid, tenantUid, skuId, skuPartNumber } = sku;
+        const logSql = `
+            INSERT INTO ms_sku_log (
+                ms_sku_log_timestamp,
+                ms_sku_log_operation,
+                ms_tenant_id,
+                ms_sku_uid,
+                ms_sku_sku_id,
+                ms_sku_sku_part_number,
+                ms_sku_unit_count
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?);
+        `;
+
+        const { uid, tenantUid, skuId, skuPartNumber, unitCount } = sku;
 
         const tenantId = getMsTenantIdFromUid(db, tenantUid);
         if (!tenantId) return;
 
-        return db.prepare(sql).run(uid, tenantId, skuId, skuPartNumber);
+        db.prepare(logSql).run(
+            Date.now(),
+            "create",
+            tenantId,
+            uid,
+            skuId,
+            skuPartNumber,
+            unitCount
+        );
+
+        return db
+            .prepare(sql)
+            .run(uid, tenantId, skuId, skuPartNumber, unitCount);
     },
 
     updateMsSku(db, sku) {
         const sql = `
             UPDATE ms_sku
             SET ms_sku_sku_id = ?,
-                ms_sku_part_number = ?
+                ms_sku_part_number = ?,
+                ms_sku_unit_count = ?
             WHERE ms_sku_uid = ?;
 
         `;
 
-        const { uid, skuId, skuPartNumber } = sku;
-        return db.prepare(sql).run(skuId, skuPartNumber, uid);
+        const logSql = `
+            INSERT INTO ms_sku_log (
+                ms_sku_log_timestamp,
+                ms_sku_log_operation,
+                ms_tenant_id,
+                ms_sku_uid,
+                ms_sku_sku_id,
+                ms_sku_sku_part_number,
+                ms_sku_unit_count
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?);
+        `;
+
+        const { uid, tenantUid, skuId, skuPartNumber, unitCount, $source } =
+            sku;
+
+        const tenantId = getMsTenantIdFromUid(db, tenantUid);
+
+        if (unitCount !== $source.unitCount) {
+            db.prepare(logSql).run(
+                Date.now(),
+                "change",
+                tenantId,
+                uid,
+                skuId,
+                skuPartNumber,
+                unitCount
+            );
+        }
+
+        return db.prepare(sql).run(skuId, skuPartNumber, unitCount, uid);
     },
 
     deleteMsSku(db, sku) {
@@ -417,6 +488,36 @@ const Database = {
             DELETE FROM ms_sku
             WHERE ms_sku_uid = ?;
         `;
+
+        const logSql = `
+            INSERT INTO ms_sku_log (
+                ms_sku_log_timestamp,
+                ms_sku_log_operation,
+                ms_tenant_id,
+                ms_sku_uid,
+                ms_sku_sku_id,
+                ms_sku_part_number,
+                ms_sku_unit_count
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?);
+        `;
+
+        const { id, tenantId, uid, skuId, skuPartNumber, unitCount } = sku;
+
+        const assignments = this.getMsSkuAssignmentsBySkuId(db, id);
+        assignments.forEach(({ id }) => {
+            this.deleteMsSkuAssignment(db, id);
+        });
+
+        db.prepare(logSql).run(
+            Date.now(),
+            "delete",
+            tenantId,
+            uid,
+            skuId,
+            skuPartNumber,
+            unitCount
+        );
 
         return db.prepare(sql).run(sku.uid);
     },
@@ -501,7 +602,95 @@ const Database = {
             WHERE ms_user_uid = ?;
         `;
 
+        const assignments = this.getMsSkuAssignmentsByUserId(db, user.id);
+        assignments.forEach(({ id }) => {
+            this.deleteMsSkuAssignment(db, id);
+        });
+
         return db.prepare(sql).run(user.uid);
+    },
+
+    getMsSkuAssignmentsBySkuId(db, skuId) {
+        const sql = `
+            SELECT
+                ms_sku_assignment_id,
+                ms_user_id,
+                ms_sku_id,
+                ms_tenant_id,
+                ms_tenant_uid,
+                ms_user_uid,
+                ms_user_user_principal_name,
+                ms_user_display_name,
+                ms_user_given_name,
+                ms_user_surname,
+                ms_sku_uid,
+                ms_sku_sku_id,
+                ms_sku_part_number,
+                ms_sku_unit_count
+            FROM ms_sku_assignment
+            NATURAL JOIN ms_user
+            NATURAL JOIN ms_sku
+            NATURAL JOIN ms_tenant
+            WHERE ms_sku_id = ?;
+        `;
+
+        return db.prepare(sql).all(skuId).map(transformMsSkuAssignmentFromDb);
+    },
+
+    getMsSkuAssignmentsByUserId(db, userId) {
+        const sql = `
+            SELECT
+                ms_sku_assignment_id,
+                ms_user_id,
+                ms_sku_id,
+                ms_tenant_id,
+                ms_tenant_uid,
+                ms_user_uid,
+                ms_user_user_principal_name,
+                ms_user_display_name,
+                ms_user_given_name,
+                ms_user_surname,
+                ms_sku_uid,
+                ms_sku_sku_id,
+                ms_sku_part_number,
+                ms_sku_unit_count
+            FROM ms_sku_assignment
+            NATURAL JOIN
+            NATURAL JOIN ms_user
+            NATURAL JOIN ms_sku
+            NATURAL JOIN ms_tenant
+            WHERE ms_user_id = ?;
+        `;
+
+        return db.prepare(sql).all(userId).map(transformMsSkuAssignmentFromDb);
+    },
+
+    deleteMsSkuAssignment(db, assignment) {
+        const sql = `
+            DELETE FROM ms_sku_assignment
+            WHERE ms_sku_assignment_id = ?;
+        `;
+
+        const logSql = `
+            INSERT INTO ms_sku_assignment_log (
+                ms_sku_assignment_log_timestamp,
+                ms_sku_assignment_log_operation,
+                ms_tenant_id,
+                ms_user_uid,
+                ms_user_user_principal_name,
+                ms_user_display_name,
+                ms_user_given_name,
+                ms_user_surname,
+                ms_sku_uid,
+                ms_sku_sku_id,
+                ms_sku_part_number
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        `;
+
+        const { id, tenantId, user, sku } = assignment;
+
+        return db.prepare(sql).run(id);
     },
 };
 

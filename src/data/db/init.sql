@@ -52,6 +52,19 @@ CREATE TABLE IF NOT EXISTS ms_sku (
     ms_tenant_id                        INTEGER NOT NULL,
     ms_sku_sku_id                       CHAR(36) NOT NULL,
     ms_sku_part_number                  VARCHAR(128) NOT NULL,
+    ms_sku_unit_count                   INTEGER NOT NULL,
+    FOREIGN KEY (ms_tenant_id)          REFERENCES ms_tenant (ms_tenant_id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS ms_sku_log (
+    ms_sku_log_id                       INTEGER PRIMARY KEY,
+    ms_sku_log_timestamp                INTEGER NOT NULL,
+    ms_sku_log_operation                VARCHAR(16) NOT NULL,
+    ms_tenant_id                        INTEGER NOT NULL,
+    ms_sku_uid                          VARCHAR(128) NOT NULL,
+    ms_sku_sku_id                       CHAR(36) NOT NULL,
+    ms_sku_part_number                  VARCHAR(128) NOT NULL,
+    ms_sku_unit_count                   INTEGER NOT NULL,
     FOREIGN KEY (ms_tenant_id)          REFERENCES ms_tenant (ms_tenant_id) ON DELETE CASCADE
 );
 
