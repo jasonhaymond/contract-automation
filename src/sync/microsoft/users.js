@@ -1,6 +1,6 @@
 const { unidirectionalArrayDiff } = require("../../lib/diff");
 const { Database } = require("../../models/db");
-const { syncSkuAssignments } = require("./assignments");
+const { syncUserLicenseAssignments } = require("./licenses");
 
 async function syncUsers(db, clients) {
     for (const client of clients) {
@@ -22,9 +22,9 @@ async function syncUsers(db, clients) {
             Database.deleteMsUser(db, user);
         });
 
-        updatedUsers.forEach((user) => {
-            syncSkuAssignments(db, user);
-        });
+        for (const user of updatedUsers) {
+            await syncUserLicenseAssignments(db, user);
+        }
     }
 }
 

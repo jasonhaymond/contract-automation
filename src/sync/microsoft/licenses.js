@@ -2,25 +2,33 @@ const { unidirectionalArrayDiff } = require("../../lib/diff");
 const { Database } = require("../../models/db");
 
 async function syncUserLicenseAssignments(db, user) {
-    for (const client of clients) {
-        const sourceUsers = Database.getMsUsersByTenantUid(db, client.uid);
-        const updatedUsers = await client.getUsers();
+    const sourceAssignments = Database.getMsSkuAssignmentsByUserUid(
+        db,
+        user.uid
+    ).map((assignment) => ({
+        userUid: user.uid,
+        skuId: assignment.sku.skuId,
+        ...assignment,
+    }));
 
-        const { newValues, changedValues, removedValues } =
-            unidirectionalArrayDiff(sourceUsers, updatedUsers, "uid");
+    const updatedAssignments = user.assignedLicenses.map(({ skuId }) => ({
+        userUid: user.uid,
+        skuId,
+    }));
 
-        newValues.forEach((user) => {
-            Database.createMsUser(db, user);
-        });
+    const { newValues, removedValues } = unidirectionalArrayDiff(
+        sourceAssignments,
+        updatedAssignments,
+        "skuId"
+    );
 
-        changedValues.forEach((user) => {
-            Database.updateMsUser(db, user);
-        });
+    newValues.forEach((assignment) => {
+        Database.createMsSkuAssignment(db, assignment);
+    });
 
-        removedValues.forEach((user) => {
-            Database.deleteMsUser(db, user);
-        });
-    }
+    removedValues.forEach((assignment) => {
+        Database.deleteMsSkuAssignment(db, assignment);
+    });
 }
 
 module.exports = {
