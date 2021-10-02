@@ -737,18 +737,19 @@ const Database = {
         `;
 
         const {
+            id: user_id,
             tenantId,
-            uid: userUid,
             userPrincipalName,
             displayName,
             givenName,
             surname,
         } = this.getMsUserByUserUid(db, userUid);
 
-        const { uid: skuUid, skuPartNumber } = this.getMsSkuBySkuSkuId(
-            db,
-            skuId
-        );
+        const {
+            id: sku_id,
+            uid: skuUid,
+            skuPartNumber,
+        } = this.getMsSkuBySkuSkuId(db, skuId);
 
         db.prepare(logSql).run(
             Date.now(),
@@ -764,7 +765,7 @@ const Database = {
             skuPartNumber
         );
 
-        return db.prepare(sql).run(id);
+        return db.prepare(sql).run(user_id, sku_id);
     },
 
     deleteMsSkuAssignment(db, assignment) {
