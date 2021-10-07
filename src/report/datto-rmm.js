@@ -1,13 +1,12 @@
 const { getDb } = require("../data/db");
 const { buildTable, buildHTML } = require("../lib/html");
-const { getMonthRange, getMonthAndYear, addMonths } = require("../lib/time");
 const { Graph } = require("../models/graph");
 const { Database } = require("../models/db");
 
 const getDeviceCountByType = (devices, type) =>
     devices.filter((device) => device.type === type).length;
 
-const sendDattoRmmReport = async (current) => {
+async function sendDattoRmmReport(start, end, reportMonthYear) {
     const summaryHeaders = [
         {
             name: "Site",
@@ -60,14 +59,7 @@ const sendDattoRmmReport = async (current) => {
         };
     });
 
-    let reportDate = new Date();
-    if (!current) {
-        reportDate.setDate(1); // Handle different month lengths
-        reportDate = addMonths(reportDate, -1);
-    }
-    const { start, end } = getMonthRange(reportDate);
-
-    const title = `Datto RMM Report — ${getMonthAndYear(reportDate)}`;
+    const title = `Datto RMM Report — ${reportMonthYear}`;
     const summaryTable = buildTable({
         headers: summaryHeaders,
         data: drmmReport,
@@ -86,8 +78,8 @@ const sendDattoRmmReport = async (current) => {
 
     const html = buildHTML({ body: summaryTable + changesTable, title });
     const recipients = process.env.EMAIL_RECIPIENTS.split(",");
-    Graph.sendEmail(title, recipients, html);
-};
+    await Graph.sendEmail(title, recipients, html);
+}
 
 module.exports = {
     sendDattoRmmReport,

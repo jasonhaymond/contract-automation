@@ -587,6 +587,25 @@ const Database = {
         return db.prepare(sql).all(tenantUid).map(transformMsUserFromDb);
     },
 
+    getMsUserCountGroupedByTenant(db) {
+        const sql = `
+            SELECT 
+                ms_tenant_name,
+                COUNT(ms_user_id) AS user_count
+            FROM ms_user
+            NATURAL JOIN ms_tenant
+            GROUP BY ms_tenant_id;
+        `;
+
+        return db
+            .prepare(sql)
+            .all()
+            .map((r) => ({
+                tenantName: r.ms_tenant_name,
+                userCount: r.user_count,
+            }));
+    },
+
     createMsUser(db, user) {
         const sql = `
             INSERT INTO ms_user (
@@ -654,6 +673,28 @@ const Database = {
         });
 
         return db.prepare(sql).run(user.uid);
+    },
+
+    getMsSkuAssignmentsByTenantId(db, tenantId) {
+        const sql = `
+            SELECT
+                ms_user_id,
+                ms_user_display_name,
+                ms_sku_sku_part_number
+            FROM ms_sku_assignment
+            NATURAL JOIN ms_user
+            NATURAL JOIN ms_sku
+            WHERE ms_tenant_id = ?;
+        `;
+
+        return db
+            .prepare(sql)
+            .all(tenantId)
+            .map((r) => ({
+                userId: r.ms_user_id,
+                userDisplayName: r.ms_user_display_name,
+                skuPartNumber: r.ms_sku_sku_part_number,
+            }));
     },
 
     getMsSkuAssignmentsBySkuId(db, id) {
