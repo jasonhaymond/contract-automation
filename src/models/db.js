@@ -386,7 +386,7 @@ const Database = {
         return db.prepare(sql).run(tenant.uid);
     },
 
-    getMsSkuBySkuSkuId(db, skuId) {
+    getMsSkuBySkuSkuId(db, tenantId, skuId) {
         const sql = `
             SELECT
                 ms_sku_id,
@@ -398,10 +398,12 @@ const Database = {
                 ms_sku_unit_count
             FROM ms_sku
             NATURAL JOIN ms_tenant
-            WHERE ms_sku_sku_id = ?;
+            WHERE
+                ms_tenant_id = ? AND
+                ms_sku_sku_id = ?;
         `;
 
-        return transformMsSkuFromDb(db.prepare(sql).get(skuId));
+        return transformMsSkuFromDb(db.prepare(sql).get(tenantId, skuId));
     },
 
     getMsSkusByTenantUid(db, tenantUid) {
@@ -790,7 +792,7 @@ const Database = {
             id: sku_id,
             uid: skuUid,
             skuPartNumber,
-        } = this.getMsSkuBySkuSkuId(db, skuId);
+        } = this.getMsSkuBySkuSkuId(db, tenantId, skuId);
 
         db.prepare(logSql).run(
             Date.now(),

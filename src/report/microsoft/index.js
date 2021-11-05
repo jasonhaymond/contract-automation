@@ -9,7 +9,7 @@ async function sendMicrosoftReport(start, end, reportMonthYear) {
     const title = `Microsoft 365 Report — ${reportMonthYear}`;
     const db = getDb();
 
-    const summaryTable = buildUserSummaryTable(db, start, end, reportMonthYear);
+    const userSummaryTable = buildUserSummaryTable(db);
 
     const tenants = Database.getMsTenants(db);
     const detailTables = tenants.reduce(
@@ -17,7 +17,7 @@ async function sendMicrosoftReport(start, end, reportMonthYear) {
         ""
     );
 
-    const html = buildHTML({ body: summaryTable + detailTables, title });
+    const html = buildHTML({ body: userSummaryTable + detailTables, title });
     const recipients = process.env.EMAIL_RECIPIENTS.split(",");
     await Graph.sendEmail(title, recipients, html);
 }

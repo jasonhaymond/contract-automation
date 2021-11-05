@@ -1,7 +1,7 @@
 const { buildTable } = require("../../lib/html");
 const { Database } = require("../../models/db");
 
-function buildUserSummaryTable(db, start, end, reportMonthYear) {
+function buildUserSummaryTable(db) {
     const summaryHeaders = [
         { name: "Tenant", value: "tenantName" },
         { name: "Users", value: "userCount" },

@@ -2,29 +2,41 @@
 
 ## Project setup
 
-Install Docker and Docker Compose (the following commands
-should work for Debian and Ubuntu):
+Install [Docker](https://docs.docker.com/engine/install/)
+and [Docker Compose](https://docs.docker.com/compose/install/).
+
+* Debian/Ubuntu:
+    ```sh
+    sudo apt install docker.io
+    sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    sudo chmod +x /usr/local/bin/docker-compose
+    ```
+
+* Arch Linux/Manjaro
+    ```sh
+    sudo pacman -Syu docker docker-compose
+    ```
+
+Set up Docker:
 
 ```sh
-sudo apt install docker.io
+sudo systemctl enable --now docker.service
+sudo systemctl enable --now containerd.service
 sudo usermod -aG docker $USER
-sudo systemctl enable docker.service
-sudo systemctl enable containerd.service
-sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
 ```
 
-Reboot your machine, and then run:
+Download and configure the repository:
 
 ```sh
 git clone https://github.com/jasonhaymond/contract-automation.git
 cd contract-automation
 cp .env.example .env
+chmod 600 .env
 $EDITOR .env
 ```
 
 Add your API keys and other environment variables to `.env`
-and save the changes.
+and save the changes. Log out and back in to complete the process.
 
 ## Usage
 
@@ -42,7 +54,7 @@ To run the app in production mode, use this command
 docker-compose -f docker-compose.yml run --service-ports --rm node [COMMAND]
 ```
 
-To debug:
+To debug (Node.js 14 must be installed on your workstation):
 
 ```sh
 docker-compose run --service-ports --rm node [COMMAND]
