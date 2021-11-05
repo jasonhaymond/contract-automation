@@ -2,8 +2,8 @@ const { getDb } = require("../../data/db");
 const { buildHTML } = require("../../lib/html");
 const { Database } = require("../../models/db");
 const { Graph } = require("../../models/graph");
-const { buildUserDetailTable } = require("./userDetail");
-const { buildUserSummaryTable } = require("./userSummary");
+const { buildUserDetailTable } = require("./user-detail");
+const { buildUserSummaryTable } = require("./user-summary");
 
 async function sendMicrosoftReport(start, end, reportMonthYear) {
     const title = `Microsoft 365 Report — ${reportMonthYear}`;
@@ -13,7 +13,7 @@ async function sendMicrosoftReport(start, end, reportMonthYear) {
 
     const tenants = Database.getMsTenants(db);
     const detailTables = tenants.reduce(
-        (acc, { id, name }) => acc + buildUserDetailTable(db, id, name),
+        (acc, tenant) => acc + buildUserDetailTable(db, tenant),
         ""
     );
 

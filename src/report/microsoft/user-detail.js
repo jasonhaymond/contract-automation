@@ -1,13 +1,15 @@
 const { buildTable } = require("../../lib/html");
 const { Database } = require("../../models/db");
 
-function buildUserDetailTable(db, tenantId, tenantName) {
+function buildUserDetailTable(db, tenant) {
     const summaryHeaders = [
         { name: "User", value: "userDisplayName" },
         { name: "Assigned Licenses", value: "licenses" },
     ];
 
-    const assignments = Database.getMsSkuAssignmentsByTenantId(db, tenantId);
+    const { id, name } = tenant;
+
+    const assignments = Database.getMsSkuAssignmentsByTenantId(db, id);
     const userIds = [...new Set(assignments.map((asn) => asn.userId))];
     const data = userIds.map((id) => {
         const filteredAssignments = assignments.filter(
@@ -28,7 +30,7 @@ function buildUserDetailTable(db, tenantId, tenantName) {
     return buildTable({
         headers: summaryHeaders,
         data,
-        caption: tenantName,
+        caption: name,
     });
 }
 
