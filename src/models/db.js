@@ -51,6 +51,18 @@ const transformMsSkuFromDb = (sku) => ({
     unitCount: sku.ms_sku_unit_count,
 });
 
+const transformMsSkuLogEntryFromDb = (entry) => ({
+    id: entry.ms_sku_log_id,
+    timestamp: new Date(entry.ms_sku_log_timestamp),
+    operation: entry.ms_sku_log_operation,
+    tenantId: entry.ms_tenant_id,
+    tenantName: entry.ms_tenant_name,
+    skuUid: entry.ms_sku_uid,
+    skuSkuId: entry.ms_sku_sku_id,
+    skuPartNumber: entry.ms_sku_sku_part_number,
+    unitCount: entry.ms_sku_unit_count,
+});
+
 const transformMsUserFromDb = (user) => ({
     id: user.ms_user_id,
     uid: user.ms_user_uid,
@@ -70,20 +82,28 @@ const transformMsSkuAssignmentFromDb = (assignment) => ({
     sku: transformMsSkuFromDb(assignment),
 });
 
+const transformMsSkuAssignmentLogEntryFromDb = (entry) => ({
+    id: entry.ms_sku_assignment_log_id,
+    timestamp: new Date(entry.ms_sku_assignment_log_timestamp),
+    operation: entry.ms_sku_assignment_log_operation,
+    tenantId: entry.ms_tenant_id,
+    tenantName: entry.ms_tenant_name,
+    userUid: entry.ms_user_uid,
+    userPrincipalName: entry.ms_user_user_principal_name,
+    displayName: entry.ms_user_display_name,
+    givenName: entry.ms_user_given_name,
+    surname: entry.ms_user_surname,
+    skuUid: entry.ms_sku_uid,
+    skuSkuId: entry.ms_sku_sku_id,
+    skuPartNumber: entry.ms_sku_sku_part_number,
+});
+
 const getMsTenantIdFromUid = (db, uid) => {
     const tenant = db
         .prepare("SELECT ms_tenant_id FROM ms_tenant WHERE ms_tenant_uid = ?;")
         .get(uid);
 
     return tenant ? tenant.ms_tenant_id : null;
-};
-
-const getMsUserIdFromUid = (db, uid) => {
-    const user = db
-        .prepare("SELECT ms_user_id FROM ms_user WHERE ms_user_uid = ?;")
-        .get(uid);
-
-    return user ? user.ms_user_id : null;
 };
 
 const Database = {
@@ -316,7 +336,7 @@ const Database = {
         return db.prepare(deleteSql).run(uid);
     },
 
-    getDattoRmmLogs(db, from, to) {
+    getDattoRmmLogs(db, start, end) {
         const getLogEntriesSql = `
             SELECT
                 drmm_device_log_id,
@@ -340,7 +360,7 @@ const Database = {
 
         return db
             .prepare(getLogEntriesSql)
-            .all(from.getTime(), to.getTime())
+            .all(start.getTime(), end.getTime())
             .map(transformLogEntryFromDb);
     },
 
@@ -551,6 +571,34 @@ const Database = {
         return db.prepare(sql).run(sku.uid);
     },
 
+    getMsSkuLogs(db, start, end) {
+        const sql = `
+            SELECT
+                ms_sku_log_id,
+                ms_sku_log_timestamp,
+                ms_sku_log_operation,
+                ms_tenant_id,
+                ms_tenant_name,
+                ms_sku_uid,
+                ms_sku_sku_id,
+                ms_sku_sku_part_number,
+                ms_sku_unit_count
+            FROM ms_sku_log
+            NATURAL JOIN ms_tenant
+            WHERE
+                ms_sku_log_timestamp >= ?
+                AND ms_sku_log_timestamp < ?
+            ORDER BY
+                ms_tenant_name,
+                ms_sku_log_timestamp DESC;
+        `;
+
+        return db
+            .prepare(sql)
+            .all(start.getTime(), end.getTime())
+            .map(transformMsSkuLogEntryFromDb);
+    },
+
     getMsUserByUserUid(db, uid) {
         const sql = `
             SELECT
@@ -753,6 +801,30 @@ const Database = {
         return db.prepare(sql).all(uid).map(transformMsSkuAssignmentFromDb);
     },
 
+    getMsSkuAssignmentCountsGroupedBySkuId(db, tenantId) {
+        const sql = `
+            SELECT
+                ms_sku_id,
+                ms_sku_sku_part_number,
+                ms_sku_unit_count,
+                COUNT(ms_sku_assignment_id) AS assignment_count
+            FROM ms_sku_assignment
+            NATURAL JOIN ms_sku
+            WHERE ms_tenant_id = ?
+            GROUP BY ms_sku_id; 
+        `;
+
+        return db
+            .prepare(sql)
+            .all(tenantId)
+            .map((r) => ({
+                id: r.ms_sku_id,
+                skuPartNumber: r.ms_sku_sku_part_number,
+                unitCount: r.ms_sku_unit_count,
+                assignmentCount: r.assignment_count,
+            }));
+    },
+
     createMsSkuAssignment(db, { userUid, skuId }) {
         const sql = `
             INSERT INTO ms_sku_assignment (
@@ -862,6 +934,38 @@ const Database = {
         );
 
         return db.prepare(sql).run(id);
+    },
+
+    getMsSkuAssignmentLogs(db, start, end) {
+        const sql = `
+            SELECT
+                ms_sku_assignment_log_id,
+                ms_sku_assignment_log_timestamp,
+                ms_sku_assignment_log_operation,
+                ms_tenant_id,
+                ms_tenant_name,
+                ms_user_uid,
+                ms_user_user_principal_name,
+                ms_user_display_name,
+                ms_user_given_name,
+                ms_user_surname,
+                ms_sku_uid,
+                ms_sku_sku_id,
+                ms_sku_sku_part_number
+            FROM ms_sku_assignment_log
+            NATURAL JOIN ms_tenant
+            WHERE
+                ms_sku_assignment_log_timestamp >= ?
+                AND ms_sku_assignment_log_timestamp < ?
+            ORDER BY
+                ms_tenant_name,
+                ms_sku_assignment_log_timestamp DESC;
+        `;
+
+        return db
+            .prepare(sql)
+            .all(start.getTime(), end.getTime())
+            .map(transformMsSkuAssignmentLogEntryFromDb);
     },
 };
 
