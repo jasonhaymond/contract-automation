@@ -314,15 +314,8 @@ const Database = {
             VALUES (?, ?, ?, ?, ?, ?);
         `;
 
-<<<<<<< HEAD
-        const { siteUid, type, hostname } = device;
-
-        const siteId = getSiteIdFromUid(db, siteUid);
-        const uid = device.uid;
-=======
         const { siteUid, uid, type, hostname } = device;
         const siteId = getSiteIdFromUid(db, siteUid);
->>>>>>> f41e075 (Work on assignment sync)
 
         db.prepare(logSql).run(
             Date.now(),
