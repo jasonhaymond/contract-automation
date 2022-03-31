@@ -11,11 +11,12 @@ async function sendAllReports(current) {
     const { start, end } = getMonthRange(reportDate);
     const reportMonthYear = getMonthAndYear(reportDate);
 
-    //await sendDattoRmmReport(start, end, reportMonthYear);
+    await sendDattoRmmReport(start, end, reportMonthYear);
     await sendMicrosoftReport(start, end, reportMonthYear);
 }
 
 module.exports = {
     sendDattoRmmReport,
+    sendMicrosoftReport,
     sendAllReports,
 };
