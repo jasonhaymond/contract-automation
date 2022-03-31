@@ -76,5 +76,5 @@ and add the following lines, replacing the path as needed:
 
 ```sh
 0 */4 * * * cd /home/USERNAME/contract-automation && /usr/local/bin/docker-compose -f docker-compose.yml run --service-ports --rm node sync
-0 0 1 * * * cd /home/USERNAME/contract-automation && /usr/local/bin/docker-compose -f docker-compose.yml run --service-ports --rm node report
+0 0 1 * * cd /home/USERNAME/contract-automation && /usr/local/bin/docker-compose -f docker-compose.yml run --service-ports --rm node report
 ```
